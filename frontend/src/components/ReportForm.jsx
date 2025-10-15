@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../context/AuthContext';
 import FileUpload from './FileUpload';
 import CameraCapture from './CameraCapture';
 import VoiceRecorder from './VoiceRecorder';
 
 function ReportForm() {
   const { t } = useTranslation();
+  const { session } = useAuth();
   const [issueType, setIssueType] = useState('');
   const [description, setDescription] = useState('');
   const [file, setFile] = useState(null);
@@ -14,6 +16,10 @@ function ReportForm() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (!session) {
+      alert("You must be logged in to submit a report.");
+      return;
+    }
     if (!issueType || description.trim() === '') {
       alert(t('alerts.fillAllFields'));
       return;
@@ -23,13 +29,14 @@ function ReportForm() {
     const formData = new FormData();
     formData.append('issueType', issueType);
     formData.append('description', description);
-    if (file) {
-      formData.append('file', file);
-    }
+    if (file) formData.append('file', file);
 
     try {
       const response = await fetch('http://localhost:8080/api/reports', {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+        },
         body: formData,
       });
 
@@ -50,39 +57,31 @@ function ReportForm() {
   };
 
   const issueTypes = ['pothole', 'treeCutting', 'waterClogging', 'debris', 'unsafeStreet'];
+  const isDisabled = !session || isSubmitting;
 
   return (
-    <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md mx-4">
+    <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md mx-4 relative">
+      {!session && (
+        <div className="absolute inset-0 bg-gray-800 bg-opacity-80 flex justify-center items-center rounded-lg z-10">
+          <p className="text-white font-bold text-lg">Please log in to submit a report.</p>
+        </div>
+      )}
       <h2 className="text-2xl font-bold text-white mb-6 text-center">{t('reportForm.title')}</h2>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label htmlFor="issueType" className="block text-gray-300 text-sm font-bold mb-2">{t('reportForm.issueTypeLabel')}</label>
-          <select
-            id="issueType"
-            name="issueType"
-            value={issueType}
-            onChange={(e) => setIssueType(e.target.value)}
+          <select id="issueType" name="issueType" value={issueType} onChange={(e) => setIssueType(e.target.value)}
             className="shadow appearance-none border rounded w-full py-3 px-4 bg-gray-700 border-gray-600 text-white leading-tight focus:outline-none focus:shadow-outline focus:border-cyan-500"
-            disabled={isSubmitting}
-          >
+            disabled={isDisabled} >
             <option value="">{t('reportForm.issueTypePlaceholder')}</option>
-            {issueTypes.map(type => (
-              <option key={type} value={type}>{t(`reportForm.issueTypes.${type}`)}</option>
-            ))}
+            {issueTypes.map(type => ( <option key={type} value={type}>{t(`reportForm.issueTypes.${type}`)}</option> ))}
           </select>
         </div>
         <div className="mb-6">
           <label htmlFor="description" className="block text-gray-300 text-sm font-bold mb-2">{t('reportForm.descriptionLabel')}</label>
-          <textarea
-            id="description"
-            name="description"
-            rows="4"
-            placeholder={t('reportForm.descriptionPlaceholder')}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+          <textarea id="description" name="description" rows="4" placeholder={t('reportForm.descriptionPlaceholder')} value={description} onChange={(e) => setDescription(e.target.value)}
             className="shadow appearance-none border rounded w-full py-3 px-4 bg-gray-700 border-gray-600 text-white leading-tight focus:outline-none focus:shadow-outline focus:border-cyan-500"
-            disabled={isSubmitting}
-          ></textarea>
+            disabled={isDisabled} ></textarea>
         </div>
         <div className="mb-6">
           <label className="block text-gray-300 text-sm font-bold mb-2">{t('reportForm.mediaLabel')}</label>
@@ -91,11 +90,9 @@ function ReportForm() {
           <VoiceRecorder onFileChange={(selectedFile) => setFile(selectedFile)} />
         </div>
         <div className="flex items-center justify-center">
-          <button
-            type="submit"
+          <button type="submit"
             className="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-6 rounded-lg focus:outline-none focus:shadow-outline transition-colors duration-300 w-full disabled:bg-gray-500 disabled:cursor-not-allowed"
-            disabled={isSubmitting}
-          >
+            disabled={isDisabled} >
             {isSubmitting ? t('reportForm.submittingButton') : t('reportForm.submitButton')}
           </button>
         </div>
@@ -103,5 +100,4 @@ function ReportForm() {
     </div>
   );
 }
-
 export default ReportForm;

@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const multer = require('multer');
-const supabase = require('./lib/supabaseClient');
+const { supabase, supabaseAdmin } = require('./lib/supabaseClient');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -19,44 +19,43 @@ app.get('/', (req, res) => {
 });
 
 app.post('/api/reports', upload.single('file'), async (req, res) => {
-  const { issueType, description } = req.body;
-  const file = req.file;
-  let mediaUrl = null;
-
   try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ message: 'Authentication token is required.' });
+
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    if (userError || !user) return res.status(401).json({ message: 'Invalid or expired token.' });
+
+    const { issueType, description } = req.body;
+    const file = req.file;
+    let mediaUrl = null;
+
     if (file) {
-      const fileName = `${Date.now()}_${file.originalname}`;
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const fileName = `${user.id}/${Date.now()}_${file.originalname}`;
+      const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
         .from('report-media')
-        .upload(fileName, file.buffer, {
-          contentType: file.mimetype,
-        });
+        .upload(fileName, file.buffer, { contentType: file.mimetype });
 
-      if (uploadError) {
-        throw uploadError;
-      }
+      if (uploadError) throw uploadError;
 
-      const { data: urlData } = supabase.storage
+      const { data: urlData } = supabaseAdmin.storage
         .from('report-media')
         .getPublicUrl(uploadData.path);
       
       mediaUrl = urlData.publicUrl;
     }
 
-    const { data: reportData, error: insertError } = await supabase
+    const { data: reportData, error: insertError } = await supabaseAdmin
       .from('reports')
-      .insert([
-        { 
+      .insert([{ 
           issue_type: issueType, 
           description: description, 
           media_url: mediaUrl,
-        },
-      ])
+          user_id: user.id
+      }])
       .select();
 
-    if (insertError) {
-      throw insertError;
-    }
+    if (insertError) throw insertError;
 
     res.status(201).json({ 
       message: 'Report submitted and saved successfully!',
@@ -80,9 +79,7 @@ app.get('/api/reports', async (req, res) => {
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (error) {
-      throw error;
-    }
+    if (error) throw error;
     res.status(200).json(data);
   } catch (error) {
     console.error('Error fetching reports:', error.message);
