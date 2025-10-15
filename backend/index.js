@@ -73,6 +73,23 @@ app.post('/api/reports', upload.single('file'), async (req, res) => {
   }
 });
 
+app.get('/api/reports', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('reports')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+    res.status(200).json(data);
+  } catch (error) {
+    console.error('Error fetching reports:', error.message);
+    res.status(500).json({ message: 'Failed to fetch reports.', error: error.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
