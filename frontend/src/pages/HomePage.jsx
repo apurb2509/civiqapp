@@ -1,9 +1,11 @@
 import ReportForm from '../components/ReportForm';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
 
 function HomePage() {
   const { t } = useTranslation();
+  const { profile } = useAuth();
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -31,11 +33,14 @@ function HomePage() {
           <motion.p variants={itemVariants} className="text-lg sm:text-xl md:text-2xl mb-8 text-gray-200">
             {t('homePage.heroSubtitle')}
           </motion.p>
-          <motion.div variants={itemVariants}>
-            <a href="#report-form" className="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-6 sm:py-4 sm:px-8 rounded-lg text-base sm:text-lg transition-transform transform hover:scale-105 duration-300 inline-block">
-              {t('homePage.reportButton')}
-            </a>
-          </motion.div>
+          {/* Hide button for admins */}
+          {profile?.role !== 'admin' && (
+            <motion.div variants={itemVariants}>
+              <a href="#report-form" className="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-6 sm:py-4 sm:px-8 rounded-lg text-base sm:text-lg transition-transform transform hover:scale-105 duration-300 inline-block">
+                {t('homePage.reportButton')}
+              </a>
+            </motion.div>
+          )}
         </motion.div>
       </section>
 
@@ -52,28 +57,20 @@ function HomePage() {
             {t('homePage.howItWorksSubtitle')}
           </motion.p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10">
-            <motion.div variants={itemVariants} className="bg-gray-900 p-8 rounded-xl shadow-2xl">
-              <div className="text-cyan-400 text-5xl sm:text-6xl font-bold mb-4">1</div>
-              <h3 className="text-xl sm:text-2xl font-bold mb-3">{t('homePage.step1Title')}</h3>
-              <p className="text-gray-400">{t('homePage.step1Text')}</p>
-            </motion.div>
-            <motion.div variants={itemVariants} className="bg-gray-900 p-8 rounded-xl shadow-2xl">
-              <div className="text-cyan-400 text-5xl sm:text-6xl font-bold mb-4">2</div>
-              <h3 className="text-xl sm:text-2xl font-bold mb-3">{t('homePage.step2Title')}</h3>
-              <p className="text-gray-400">{t('homePage.step2Text')}</p>
-            </motion.div>
-            <motion.div variants={itemVariants} className="bg-gray-900 p-8 rounded-xl shadow-2xl">
-              <div className="text-cyan-400 text-5xl sm:text-6xl font-bold mb-4">3</div>
-              <h3 className="text-xl sm:text-2xl font-bold mb-3">{t('homePage.step3Title')}</h3>
-              <p className="text-gray-400">{t('homePage.step3Text')}</p>
-            </motion.div>
+            {/* How it works cards... */}
+            <motion.div variants={itemVariants} className="bg-gray-900 p-8 rounded-xl shadow-2xl"><div className="text-cyan-400 text-5xl sm:text-6xl font-bold mb-4">1</div><h3 className="text-xl sm:text-2xl font-bold mb-3">{t('homePage.step1Title')}</h3><p className="text-gray-400">{t('homePage.step1Text')}</p></motion.div>
+            <motion.div variants={itemVariants} className="bg-gray-900 p-8 rounded-xl shadow-2xl"><div className="text-cyan-400 text-5xl sm:text-6xl font-bold mb-4">2</div><h3 className="text-xl sm:text-2xl font-bold mb-3">{t('homePage.step2Title')}</h3><p className="text-gray-400">{t('homePage.step2Text')}</p></motion.div>
+            <motion.div variants={itemVariants} className="bg-gray-900 p-8 rounded-xl shadow-2xl"><div className="text-cyan-400 text-5xl sm:text-6xl font-bold mb-4">3</div><h3 className="text-xl sm:text-2xl font-bold mb-3">{t('homePage.step3Title')}</h3><p className="text-gray-400">{t('homePage.step3Text')}</p></motion.div>
           </div>
         </div>
       </motion.section>
 
-      <section id="report-form" className="py-16 sm:py-20 flex justify-center items-center bg-gray-900 p-4">
-        <ReportForm />
-      </section>
+      {/* Conditionally render the entire report form section */}
+      {profile?.role !== 'admin' && (
+        <section id="report-form" className="py-16 sm:py-20 flex justify-center items-center bg-gray-900 p-4">
+          <ReportForm />
+        </section>
+      )}
     </motion.div>
   );
 }

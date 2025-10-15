@@ -32,7 +32,8 @@ function App() {
   return (
     <BrowserRouter>
       <Navbar />
-      <main>
+      {/* Change the class here */}
+      <main className="pt-24">
         <AppRoutes />
       </main>
     </BrowserRouter>

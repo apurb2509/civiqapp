@@ -6,6 +6,15 @@
       "login": "Login / Sign Up",
       "signOut": "Sign Out"
     },
+"icons": {
+  "home": "Home",
+  "reports": "Reports",
+  "admin": "Admin Dashboard",
+  "language": "Change Language",
+  "login": "Login",
+  "logout": "Logout",
+  "menu": "Menu"
+},
     "homePage": {
       "heroTitle": "Your Voice, Your City.",
       "heroSubtitle": "Report local civic issues in real-time. Make a difference.",
