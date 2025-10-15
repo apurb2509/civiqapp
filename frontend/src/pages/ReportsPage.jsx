@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../context/AuthContext';
 
 function ReportsPage() {
   const { t, i18n } = useTranslation();
+  const { session } = useAuth();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -10,7 +12,17 @@ function ReportsPage() {
   useEffect(() => {
     const fetchReports = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/reports');
+        if (!session) {
+          // If no user is logged in, don't fetch any reports
+          setReports([]);
+          return;
+        }
+
+        const response = await fetch('http://localhost:8080/api/reports', {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+          }
+        });
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -23,7 +35,7 @@ function ReportsPage() {
       }
     };
     fetchReports();
-  }, []);
+  }, [session]);
 
   if (loading) {
     return <div className="text-center p-10 text-white bg-gray-900 min-h-screen">Loading...</div>;
@@ -36,7 +48,9 @@ function ReportsPage() {
       <div className="container mx-auto">
         <h1 className="text-3xl sm:text-4xl font-bold mb-8 text-cyan-400">{t('reportsPage.title')}</h1>
         
-        {reports.length === 0 ? (
+        {!session ? (
+           <div className="text-center text-gray-400 py-10"><p className="text-lg">Please log in to view your reports.</p></div>
+        ) : reports.length === 0 ? (
           <div className="text-center text-gray-400 py-10">
             <p className="text-lg">{t('reportsPage.noReports')}</p>
             <p className="mt-2 text-sm">{t('reportsPage.beFirst')}</p>
@@ -55,13 +69,11 @@ function ReportsPage() {
                     <span className="inline-block bg-cyan-800 text-cyan-200 text-xs font-semibold px-3 py-1 rounded-full uppercase">
                       {t(`reportForm.issueTypes.${report.issue_type}`)}
                     </span>
-                    <span className="text-xs font-bold uppercase px-3 py-1 rounded-full bg-yellow-800 text-yellow-200">
+                    <span className={`text-xs font-bold uppercase px-3 py-1 rounded-full ${statusColors[report.status] || 'bg-gray-700'}`}>
                       {t(`reportsPage.statuses.${report.status}`)}
                     </span>
                   </div>
-                  <p className="text-gray-300 mb-4 flex-grow h-24 overflow-y-auto">
-                    {report.description}
-                  </p>
+                  <p className="text-gray-300 mb-4 flex-grow h-24 overflow-y-auto">{report.description}</p>
                   <p className="text-gray-500 text-xs text-right mt-4">
                     {t('reportsPage.reportedOn')} {new Date(report.created_at).toLocaleString(i18n.language, { dateStyle: 'medium', timeStyle: 'short' })}
                   </p>
@@ -74,4 +86,12 @@ function ReportsPage() {
     </div>
   );
 }
+
+// You will need to add this small helper object at the top of the file
+const statusColors = {
+  submitted: 'bg-yellow-800 text-yellow-200',
+  in_progress: 'bg-blue-800 text-blue-200',
+  resolved: 'bg-green-800 text-green-200',
+};
+
 export default ReportsPage;

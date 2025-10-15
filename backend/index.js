@@ -32,54 +32,85 @@ app.post('/api/reports', upload.single('file'), async (req, res) => {
 
     if (file) {
       const fileName = `${user.id}/${Date.now()}_${file.originalname}`;
-      const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
-        .from('report-media')
-        .upload(fileName, file.buffer, { contentType: file.mimetype });
-
+      const { data: uploadData, error: uploadError } = await supabaseAdmin.storage.from('report-media').upload(fileName, file.buffer, { contentType: file.mimetype });
       if (uploadError) throw uploadError;
 
-      const { data: urlData } = supabaseAdmin.storage
-        .from('report-media')
-        .getPublicUrl(uploadData.path);
-      
+      const { data: urlData } = supabaseAdmin.storage.from('report-media').getPublicUrl(uploadData.path);
       mediaUrl = urlData.publicUrl;
     }
 
-    const { data: reportData, error: insertError } = await supabaseAdmin
-      .from('reports')
-      .insert([{ 
-          issue_type: issueType, 
-          description: description, 
-          media_url: mediaUrl,
-          user_id: user.id
-      }])
-      .select();
-
+    const { data: reportData, error: insertError } = await supabaseAdmin.from('reports').insert([{ issue_type: issueType, description: description, media_url: mediaUrl, user_id: user.id }]).select();
     if (insertError) throw insertError;
 
-    res.status(201).json({ 
-      message: 'Report submitted and saved successfully!',
-      data: reportData
-    });
-
+    res.status(201).json({ message: 'Report submitted and saved successfully!', data: reportData });
   } catch (error) {
     console.error('--- DETAILED ERROR ---', error);
-    res.status(500).json({ 
-      message: `Backend Error: ${error.message}`, 
-      details: error.details || 'No additional details provided.',
-      code: error.code || 'No code provided.'
-    });
+    res.status(500).json({ message: `Backend Error: ${error.message}`, details: error.details || 'No additional details provided.', code: error.code || 'No code provided.'});
+  }
+});
+
+app.patch('/api/admin/reports/:id', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ message: 'Authentication required.' });
+
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    if (userError || !user) return res.status(401).json({ message: 'Invalid user.' });
+
+    const { data: profile, error: profileError } = await supabaseAdmin.from('profiles').select('role').eq('id', user.id).single();
+    if (profileError || profile.role !== 'admin') return res.status(403).json({ message: 'Admin access required.' });
+
+    const { id } = req.params;
+    const { status } = req.body;
+    if (!status) return res.status(400).json({ message: 'New status is required.' });
+
+    const { data, error } = await supabaseAdmin.from('reports').update({ status }).eq('id', id).select().single();
+    if (error) throw error;
+    
+    res.status(200).json({ message: 'Report status updated successfully', data });
+  } catch (error) {
+    console.error('Error updating report status:', error.message);
+    res.status(500).json({ message: 'Failed to update report status.', error: error.message });
+  }
+});
+
+app.get('/api/admin/reports', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ message: 'Authentication required.' });
+
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    if (userError || !user) return res.status(401).json({ message: 'Invalid user.' });
+
+    // *** THIS IS THE FIX ***
+    // Use the admin client to bypass RLS when checking the user's role from the server.
+    const { data: profile, error: profileError } = await supabaseAdmin.from('profiles').select('role').eq('id', user.id).single();
+    
+    if (profileError || profile.role !== 'admin') {
+      return res.status(403).json({ message: 'Admin access required.' });
+    }
+
+    const { data, error } = await supabaseAdmin.from('reports').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+
+    res.status(200).json(data);
+  } catch (error) {
+    console.error('Error fetching admin reports:', error.message);
+    res.status(500).json({ message: 'Failed to fetch admin reports.', error: error.message });
   }
 });
 
 app.get('/api/reports', async (req, res) => {
   try {
-    const { data, error } = await supabase
-      .from('reports')
-      .select('*')
-      .order('created_at', { ascending: false });
-
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(200).json([]);
+    
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    if (userError || !user) return res.status(200).json([]);
+    
+    const { data, error } = await supabaseAdmin.from('reports').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
     if (error) throw error;
+    
     res.status(200).json(data);
   } catch (error) {
     console.error('Error fetching reports:', error.message);

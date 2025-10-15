@@ -3,6 +3,8 @@ import HomePage from './pages/HomePage';
 import Navbar from './components/Navbar';
 import ReportsPage from './pages/ReportsPage';
 import AuthPage from './pages/AuthPage';
+import AdminDashboard from './pages/AdminDashboard';
+import AdminRoute from './components/auth/AdminRoute';
 
 function App() {
   return (
@@ -10,9 +12,20 @@ function App() {
       <Navbar />
       <main>
         <Routes>
+          {/* Public Routes */}
           <Route path="/" element={<HomePage />} />
-          <Route path="/reports" element={<ReportsPage />} />
           <Route path="/auth" element={<AuthPage />} />
+          <Route path="/reports" element={<ReportsPage />} />
+          
+          {/* Admin-Only Route */}
+          <Route 
+            path="/admin" 
+            element={
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
+            } 
+          />
         </Routes>
       </main>
     </BrowserRouter>

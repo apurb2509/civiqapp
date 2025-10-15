@@ -48,8 +48,10 @@
   "beFirst": "Why not be the first?",
   "reportedOn": "Reported on:",
   "statuses": {
-    "submitted": "Submitted"
-  }
+  "submitted": "Submitted",
+  "in_progress": "In Progress",
+  "resolved": "Resolved"
+}
 },
     "authPage": {
       "loginTitle": "Login",

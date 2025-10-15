@@ -6,22 +6,36 @@ const AuthContext = createContext();
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(null);
   const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const getSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      setSession(data.session);
-      setUser(data.session?.user ?? null);
+    const setData = async (session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      if (session) {
+        const { data: userProfile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+        setProfile(userProfile);
+      } else {
+        setProfile(null);
+      }
       setLoading(false);
     };
 
-    getSession();
+    const getInitialSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      await setData(data.session);
+    };
+
+    getInitialSession();
 
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (_event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
+        setData(session);
       }
     );
 
@@ -36,6 +50,7 @@ export function AuthProvider({ children }) {
     signOut: () => supabase.auth.signOut(),
     session,
     user,
+    profile,
   };
 
   return (
