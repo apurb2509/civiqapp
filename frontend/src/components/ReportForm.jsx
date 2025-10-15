@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import FileUpload from './FileUpload';
 import CameraCapture from './CameraCapture';
+import VoiceRecorder from './VoiceRecorder';
 
 function ReportForm() {
   const [issueType, setIssueType] = useState('');
@@ -71,6 +72,7 @@ function ReportForm() {
           </label>
           <FileUpload key={formKey} onFileChange={(selectedFile) => setFile(selectedFile)} />
           <CameraCapture onFileChange={(selectedFile) => setFile(selectedFile)} />
+          <VoiceRecorder onFileChange={(selectedFile) => setFile(selectedFile)} />
         </div>
         <div className="flex items-center justify-center">
           <button
