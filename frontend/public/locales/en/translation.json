@@ -1,0 +1,65 @@
+{
+    "navbar": {
+      "brand": "CiviQ",
+      "home": "Home",
+      "viewReports": "View Reports",
+      "login": "Login / Sign Up",
+      "signOut": "Sign Out"
+    },
+    "homePage": {
+      "heroTitle": "Your Voice, Your City.",
+      "heroSubtitle": "Report local civic issues in real-time. Make a difference.",
+      "reportButton": "Report an Issue",
+      "howItWorksTitle": "How It Works",
+      "howItWorksSubtitle": "Resolving issues in your neighborhood is just three simple steps away.",
+      "step1Title": "Submit a Report",
+      "step1Text": "Use our simple form to describe the issue. Add a photo to provide more clarity.",
+      "step2Title": "Authority Notified",
+      "step2Text": "Your report is instantly routed to the correct municipal department for action.",
+      "step3Title": "Track to Resolution",
+      "step3Text": "You can track the status of your report and receive updates as it gets resolved."
+    },
+    "reportForm": {
+      "title": "Report a Civic Issue",
+      "issueTypeLabel": "Type of Issue",
+      "issueTypePlaceholder": "Select an issue type...",
+      "issueTypes": {
+        "pothole": "Pothole",
+        "treeCutting": "Tree Cutting",
+        "waterClogging": "Water Clogging",
+        "debris": "Debris / Garbage",
+        "unsafeStreet": "Unsafe Street (e.g., no light)"
+      },
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Describe the issue in detail...",
+      "mediaLabel": "Add Media (Optional)",
+      "submitButton": "Submit Report",
+      "submittingButton": "Submitting...",
+      "fileUpload": "Drag & Drop an image or video",
+      "browseFile": "Browse file",
+      "openCamera": "Open Camera",
+      "recordVoice": "Record Voice Note",
+      "recording": "Recording...",
+      "stop": "Stop"
+    },
+    "reportsPage": {
+      "title": "All Submitted Reports",
+      "noReports": "No reports have been submitted yet.",
+      "beFirst": "Why not be the first?",
+      "reportedOn": "Reported on:",
+      "status": "Status"
+    },
+    "authPage": {
+      "loginTitle": "Login",
+      "signUpTitle": "Sign Up",
+      "emailLabel": "Email",
+      "passwordLabel": "Password",
+      "passwordHint": "Password should be at least 6 characters.",
+      "loginPrompt": "Don't have an account?",
+      "signUpPrompt": "Already have an account?"
+    },
+    "alerts": {
+      "fillAllFields": "Please select an issue type and provide a description.",
+      "reportSuccess": "Success! Your report has been submitted."
+    }
+  }
