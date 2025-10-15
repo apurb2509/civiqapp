@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
 
 const statusColors = {
   submitted: 'bg-yellow-800 text-yellow-200',
@@ -47,22 +48,29 @@ function AdminDashboard() {
         },
         body: JSON.stringify({ status: newStatus }),
       });
-      if (!response.ok) {
-        throw new Error('Failed to update status');
-      }
+      if (!response.ok) throw new Error('Failed to update status');
       const updatedReport = await response.json();
       setReports(reports.map(r => r.id === reportId ? updatedReport.data : r));
     } catch (err) {
-      console.error("Failed to update status:", err);
       alert(`Error: ${err.message}`);
     }
+  };
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.05 } }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { y: 0, opacity: 1 }
   };
 
   if (loading) { return <div className="bg-gray-900 min-h-screen text-white text-center p-10">Loading Dashboard...</div>; }
   if (error) { return <div className="bg-gray-900 min-h-screen text-red-500 text-center p-10">Error: {error}</div>; }
 
   return (
-    <div className="bg-gray-900 min-h-screen text-white p-4 sm:p-8">
+    <motion.div initial="hidden" animate="visible" exit={{ opacity: 0 }} variants={itemVariants} className="bg-gray-900 min-h-screen text-white p-4 sm:p-8">
       <div className="container mx-auto">
         <h1 className="text-3xl sm:text-4xl font-bold mb-8 text-cyan-400">Admin Dashboard</h1>
         <div className="overflow-x-auto bg-gray-800 rounded-lg shadow-xl">
@@ -76,17 +84,13 @@ function AdminDashboard() {
                 <th scope="col" className="px-6 py-3">User ID</th>
               </tr>
             </thead>
-            <tbody>
+            <motion.tbody variants={containerVariants}>
               {reports.map((report) => (
-                <tr key={report.id} className="border-b border-gray-700 hover:bg-gray-600">
+                <motion.tr key={report.id} variants={itemVariants} className="border-b border-gray-700 hover:bg-gray-600">
                   <td className="px-6 py-4 font-medium whitespace-nowrap">{t(`reportForm.issueTypes.${report.issue_type}`)}</td>
                   <td className="px-6 py-4 max-w-xs truncate" title={report.description}>{report.description}</td>
                   <td className="px-6 py-4">
-                    <select
-                      value={report.status}
-                      onChange={(e) => handleStatusChange(report.id, e.target.value)}
-                      className={`text-xs font-bold border-none rounded px-2 py-1 ${statusColors[report.status] || 'bg-gray-700'}`}
-                    >
+                    <select value={report.status} onChange={(e) => handleStatusChange(report.id, e.target.value)} className={`text-xs font-bold border-none rounded px-2 py-1 ${statusColors[report.status] || 'bg-gray-700'}`}>
                       <option value="submitted">{t('reportsPage.statuses.submitted')}</option>
                       <option value="in_progress">{t('reportsPage.statuses.in_progress')}</option>
                       <option value="resolved">{t('reportsPage.statuses.resolved')}</option>
@@ -94,13 +98,13 @@ function AdminDashboard() {
                   </td>
                   <td className="px-6 py-4">{new Date(report.created_at).toLocaleString(i18n.language, { dateStyle: 'short', timeStyle: 'short' })}</td>
                   <td className="px-6 py-4 text-xs text-gray-400 truncate" title={report.user_id}>{report.user_id}</td>
-                </tr>
+                </motion.tr>
               ))}
-            </tbody>
+            </motion.tbody>
           </table>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
