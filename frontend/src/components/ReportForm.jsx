@@ -8,23 +8,46 @@ function ReportForm() {
   const [description, setDescription] = useState('');
   const [file, setFile] = useState(null);
   const [formKey, setFormKey] = useState(Date.now());
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     if (!issueType || description.trim() === '') {
       alert('Please select an issue type and provide a description.');
       return;
     }
-    console.log({
-      issueType: issueType,
-      description: description,
-      file: file,
-    });
-    alert('Report submitted successfully! (Check the console for data)');
-    setIssueType('');
-    setDescription('');
-    setFile(null);
-    setFormKey(Date.now());
+    setIsSubmitting(true);
+    
+    const formData = new FormData();
+    formData.append('issueType', issueType);
+    formData.append('description', description);
+    if (file) {
+      formData.append('file', file);
+    }
+
+    try {
+      const response = await fetch('http://localhost:8080/api/reports', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || 'An unknown error occurred.');
+      }
+      
+      alert('Success! Your report has been submitted.');
+      setIssueType('');
+      setDescription('');
+      setFile(null);
+      setFormKey(Date.now());
+    } catch (error) {
+      console.error('Failed to submit report:', error);
+      alert(`Error: ${error.message}`);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -43,6 +66,7 @@ function ReportForm() {
             value={issueType}
             onChange={(e) => setIssueType(e.target.value)}
             className="shadow appearance-none border rounded w-full py-3 px-4 bg-gray-700 border-gray-600 text-white leading-tight focus:outline-none focus:shadow-outline focus:border-cyan-500"
+            disabled={isSubmitting}
           >
             <option value="">Select an issue type...</option>
             <option value="pothole">Pothole</option>
@@ -64,6 +88,7 @@ function ReportForm() {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             className="shadow appearance-none border rounded w-full py-3 px-4 bg-gray-700 border-gray-600 text-white leading-tight focus:outline-none focus:shadow-outline focus:border-cyan-500"
+            disabled={isSubmitting}
           ></textarea>
         </div>
         <div className="mb-6">
@@ -77,9 +102,10 @@ function ReportForm() {
         <div className="flex items-center justify-center">
           <button
             type="submit"
-            className="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-6 rounded-lg focus:outline-none focus:shadow-outline transition-colors duration-300 w-full"
+            className="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-6 rounded-lg focus:outline-none focus:shadow-outline transition-colors duration-300 w-full disabled:bg-gray-500 disabled:cursor-not-allowed"
+            disabled={isSubmitting}
           >
-            Submit Report
+            {isSubmitting ? 'Submitting...' : 'Submit Report'}
           </button>
         </div>
       </form>
