@@ -1,10 +1,10 @@
-import ReportForm from './components/ReportForm';
+import HomePage from './pages/HomePage';
 
 function App() {
   return (
-    <main className="min-h-screen bg-gray-900 flex justify-center items-center p-4">
-      <ReportForm />
-    </main>
+    <div>
+      <HomePage />
+    </div>
   );
 }
 
