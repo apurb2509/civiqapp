@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import FileUpload from './FileUpload';
 import CameraCapture from './CameraCapture';
 import VoiceRecorder from './VoiceRecorder';
 
 function ReportForm() {
+  const { t } = useTranslation();
   const [issueType, setIssueType] = useState('');
   const [description, setDescription] = useState('');
   const [file, setFile] = useState(null);
@@ -13,7 +15,7 @@ function ReportForm() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (!issueType || description.trim() === '') {
-      alert('Please select an issue type and provide a description.');
+      alert(t('alerts.fillAllFields'));
       return;
     }
     setIsSubmitting(true);
@@ -32,12 +34,9 @@ function ReportForm() {
       });
 
       const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.message || 'An unknown error occurred.');
-      }
+      if (!response.ok) throw new Error(result.message || 'An unknown error occurred.');
       
-      alert('Success! Your report has been submitted.');
+      alert(t('alerts.reportSuccess'));
       setIssueType('');
       setDescription('');
       setFile(null);
@@ -50,16 +49,14 @@ function ReportForm() {
     }
   };
 
+  const issueTypes = ['pothole', 'treeCutting', 'waterClogging', 'debris', 'unsafeStreet'];
+
   return (
     <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md mx-4">
-      <h2 className="text-2xl font-bold text-white mb-6 text-center">
-        Report a Civic Issue
-      </h2>
+      <h2 className="text-2xl font-bold text-white mb-6 text-center">{t('reportForm.title')}</h2>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
-          <label htmlFor="issueType" className="block text-gray-300 text-sm font-bold mb-2">
-            Type of Issue
-          </label>
+          <label htmlFor="issueType" className="block text-gray-300 text-sm font-bold mb-2">{t('reportForm.issueTypeLabel')}</label>
           <select
             id="issueType"
             name="issueType"
@@ -68,23 +65,19 @@ function ReportForm() {
             className="shadow appearance-none border rounded w-full py-3 px-4 bg-gray-700 border-gray-600 text-white leading-tight focus:outline-none focus:shadow-outline focus:border-cyan-500"
             disabled={isSubmitting}
           >
-            <option value="">Select an issue type...</option>
-            <option value="pothole">Pothole</option>
-            <option value="tree_cutting">Tree Cutting</option>
-            <option value="water_clogging">Water Clogging</option>
-            <option value="debris">Debris / Garbage</option>
-            <option value="unsafe_street">Unsafe Street (e.g., no light)</option>
+            <option value="">{t('reportForm.issueTypePlaceholder')}</option>
+            {issueTypes.map(type => (
+              <option key={type} value={type}>{t(`reportForm.issueTypes.${type}`)}</option>
+            ))}
           </select>
         </div>
         <div className="mb-6">
-          <label htmlFor="description" className="block text-gray-300 text-sm font-bold mb-2">
-            Description
-          </label>
+          <label htmlFor="description" className="block text-gray-300 text-sm font-bold mb-2">{t('reportForm.descriptionLabel')}</label>
           <textarea
             id="description"
             name="description"
             rows="4"
-            placeholder="Describe the issue in detail..."
+            placeholder={t('reportForm.descriptionPlaceholder')}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             className="shadow appearance-none border rounded w-full py-3 px-4 bg-gray-700 border-gray-600 text-white leading-tight focus:outline-none focus:shadow-outline focus:border-cyan-500"
@@ -92,9 +85,7 @@ function ReportForm() {
           ></textarea>
         </div>
         <div className="mb-6">
-          <label className="block text-gray-300 text-sm font-bold mb-2">
-            Add Media (Optional)
-          </label>
+          <label className="block text-gray-300 text-sm font-bold mb-2">{t('reportForm.mediaLabel')}</label>
           <FileUpload key={formKey} onFileChange={(selectedFile) => setFile(selectedFile)} />
           <CameraCapture onFileChange={(selectedFile) => setFile(selectedFile)} />
           <VoiceRecorder onFileChange={(selectedFile) => setFile(selectedFile)} />
@@ -105,7 +96,7 @@ function ReportForm() {
             className="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-6 rounded-lg focus:outline-none focus:shadow-outline transition-colors duration-300 w-full disabled:bg-gray-500 disabled:cursor-not-allowed"
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Submitting...' : 'Submit Report'}
+            {isSubmitting ? t('reportForm.submittingButton') : t('reportForm.submitButton')}
           </button>
         </div>
       </form>

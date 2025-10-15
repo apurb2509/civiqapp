@@ -43,12 +43,14 @@
       "stop": "Stop"
     },
     "reportsPage": {
-      "title": "All Submitted Reports",
-      "noReports": "No reports have been submitted yet.",
-      "beFirst": "Why not be the first?",
-      "reportedOn": "Reported on:",
-      "status": "Status"
-    },
+  "title": "All Submitted Reports",
+  "noReports": "No reports have been submitted yet.",
+  "beFirst": "Why not be the first?",
+  "reportedOn": "Reported on:",
+  "statuses": {
+    "submitted": "Submitted"
+  }
+},
     "authPage": {
       "loginTitle": "Login",
       "signUpTitle": "Sign Up",
