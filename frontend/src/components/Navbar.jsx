@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
+import NotificationBell from './NotificationBell';
 
 const languages = [
   { code: 'en', lang: 'English' }, { code: 'hi', lang: 'हिन्दी' }, { code: 'or', lang: 'ଓଡ଼ିଆ' }, { code: 'bn', lang: 'বাংলা' }, { code: 'te', lang: 'తెలుగు' }, { code: 'mr', lang: 'Marathi' }, { code: 'ta', lang: 'தமிழ்' }, { code: 'ur', lang: 'اردو' }, { code: 'gu', lang: 'ગુજરાતી' }, { code: 'kn', lang: 'ಕನ್ನಡ' }, { code: 'ml', lang: 'മലയാളം' },
@@ -61,7 +62,6 @@ function Navbar() {
         <motion.div className="w-full max-w-5xl" initial={{ y: -100, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5, ease: 'easeOut' }}>
           <div className="hidden md:flex items-center justify-between w-full p-2 bg-gray-800 border border-gray-700 rounded-full shadow-lg">
             <div className="flex items-center flex-1">
-              {/* THIS IS THE CORRECTED LINE */}
               <Link to="/" className="text-xl font-bold text-white px-3 mr-2">{t('navbar.brand')}</Link>
               
               {profile?.role === 'admin' ? (
@@ -74,11 +74,15 @@ function Navbar() {
               )}
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
               <select onChange={(e) => changeLanguage(e.target.value)} value={i18n.language} className="bg-gray-700 border border-gray-600 rounded-full px-3 py-2 text-white text-sm focus:outline-none cursor-pointer">
                 {languages.map((lng) => (<option key={lng.code} value={lng.code} className="bg-gray-800 font-semibold">{lng.lang}</option>))}
               </select>
               <div className="w-px h-6 bg-gray-600"></div>
+
+              {/* ADD NOTIFICATION BELL FOR LOGGED IN USERS */}
+              {user && <NotificationBell />}
+
               <div ref={userMenuRef} className="relative">
                 {user ? (
                   <button onClick={() => setIsUserMenuOpen(!isUserMenuOpen)} title={user.email} className="h-10 w-10 flex items-center justify-center bg-cyan-600 rounded-full font-bold text-white text-sm hover:bg-cyan-500 transition-colors">
@@ -103,7 +107,11 @@ function Navbar() {
           </div>
           <div className="md:hidden flex items-center justify-between p-2 w-full bg-gray-800 border border-gray-700 rounded-full shadow-lg">
              <Link to="/" className="text-xl font-bold text-white pl-3">{t('navbar.brand')}</Link>
-             <button onClick={() => setIsMenuOpen(true)} className="p-2 mr-1"><svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg></button>
+             <div className="flex items-center">
+                {/* ADD NOTIFICATION BELL FOR MOBILE */}
+                {user && <NotificationBell />}
+                <button onClick={() => setIsMenuOpen(true)} className="p-2 mr-1"><svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg></button>
+             </div>
           </div>
         </motion.div>
       </header>

@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import SendMessageModal from '../components/SendMessageModal';
 
-const statusColors = {
-  submitted: 'bg-yellow-800 text-yellow-200',
-  in_progress: 'bg-blue-800 text-blue-200',
-  resolved: 'bg-green-800 text-green-200',
+const statusStyles = {
+  submitted: { badge: 'bg-amber-800 text-amber-100', text: 'text-amber-400' },
+  in_progress: { badge: 'bg-indigo-800 text-indigo-100', text: 'text-indigo-400' },
+  resolved: { badge: 'bg-emerald-800 text-emerald-100', text: 'text-emerald-400' },
 };
 
 function AdminDashboard() {
@@ -15,6 +16,8 @@ function AdminDashboard() {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [messagingReport, setMessagingReport] = useState(null);
+  const [showBroadcast, setShowBroadcast] = useState(false);
 
   useEffect(() => {
     const fetchAdminReports = async () => {
@@ -70,41 +73,62 @@ function AdminDashboard() {
   if (error) { return <div className="bg-gray-900 min-h-screen text-red-500 text-center p-10">Error: {error}</div>; }
 
   return (
-    <motion.div initial="hidden" animate="visible" exit={{ opacity: 0 }} variants={itemVariants} className="bg-gray-900 min-h-screen text-white p-4 sm:p-8">
-      <div className="container mx-auto">
-        <h1 className="text-3xl sm:text-4xl font-bold mb-8 text-cyan-400">Admin Dashboard</h1>
-        <div className="overflow-x-auto bg-gray-800 rounded-lg shadow-xl">
-          <table className="min-w-full text-sm text-left text-gray-300">
-            <thead className="text-xs text-gray-400 uppercase bg-gray-700">
-              <tr>
-                <th scope="col" className="px-6 py-3">Issue Type</th>
-                <th scope="col" className="px-6 py-3">Description</th>
-                <th scope="col" className="px-6 py-3">Status</th>
-                <th scope="col" className="px-6 py-3">Reported At</th>
-                <th scope="col" className="px-6 py-3">User ID</th>
-              </tr>
-            </thead>
-            <motion.tbody variants={containerVariants}>
-              {reports.map((report) => (
-                <motion.tr key={report.id} variants={itemVariants} className="border-b border-gray-700 hover:bg-gray-600">
-                  <td className="px-6 py-4 font-medium whitespace-nowrap">{t(`reportForm.issueTypes.${report.issue_type}`)}</td>
-                  <td className="px-6 py-4 max-w-xs truncate" title={report.description}>{report.description}</td>
-                  <td className="px-6 py-4">
-                    <select value={report.status} onChange={(e) => handleStatusChange(report.id, e.target.value)} className={`text-xs font-bold border-none rounded px-2 py-1 ${statusColors[report.status] || 'bg-gray-700'}`}>
-                      <option value="submitted">{t('reportsPage.statuses.submitted')}</option>
-                      <option value="in_progress">{t('reportsPage.statuses.in_progress')}</option>
-                      <option value="resolved">{t('reportsPage.statuses.resolved')}</option>
-                    </select>
-                  </td>
-                  <td className="px-6 py-4">{new Date(report.created_at).toLocaleString(i18n.language, { dateStyle: 'short', timeStyle: 'short' })}</td>
-                  <td className="px-6 py-4 text-xs text-gray-400 truncate" title={report.user_id}>{report.user_id}</td>
-                </motion.tr>
-              ))}
-            </motion.tbody>
-          </table>
+    <>
+      <motion.div initial="hidden" animate="visible" exit={{ opacity: 0 }} variants={itemVariants} className="bg-gray-900 min-h-screen text-white p-4 sm:p-8">
+        <div className="container mx-auto">
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-3xl sm:text-4xl font-bold text-cyan-400">Admin Dashboard</h1>
+            <button onClick={() => setShowBroadcast(true)} className="bg-purple-600 hover:bg-purple-500 text-white font-bold py-2 px-4 rounded-lg">Send Broadcast</button>
+          </div>
+          <div className="overflow-x-auto bg-gray-800 rounded-lg shadow-xl">
+            <table className="min-w-full text-sm text-left text-gray-300">
+              <thead className="text-xs text-gray-400 uppercase bg-gray-700">
+                <tr>
+                  <th scope="col" className="px-6 py-3">User</th>
+                  <th scope="col" className="px-6 py-3">Issue</th>
+                  <th scope="col" className="px-6 py-3">Status</th>
+                  <th scope="col" className="px-6 py-3">Timeline</th>
+                  <th scope="col" className="px-6 py-3">Actions</th>
+                </tr>
+              </thead>
+              <motion.tbody variants={containerVariants}>
+                {reports.map((report) => (
+                  <motion.tr key={report.id} variants={itemVariants} className="border-b border-gray-700 hover:bg-gray-700/50">
+                    <td className="px-6 py-4 text-xs text-gray-400" title={report.user_id}>{report.profiles?.email || 'N/A'}</td>
+                    <td className="px-6 py-4">
+                      <div className="font-medium whitespace-nowrap">{t(`reportForm.issueTypes.${report.issue_type}`)}</div>
+                      <div className="text-xs text-gray-400 max-w-xs truncate" title={report.description}>{report.description}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <select value={report.status} onChange={(e) => handleStatusChange(report.id, e.target.value)} className={`text-xs font-bold border-none rounded px-2 py-1 ${statusStyles[report.status]?.badge || 'bg-gray-700'}`}>
+                        <option value="submitted">{t('reportsPage.statuses.submitted')}</option>
+                        <option value="in_progress">{t('reportsPage.statuses.in_progress')}</option>
+                        <option value="resolved">{t('reportsPage.statuses.resolved')}</option>
+                      </select>
+                    </td>
+                    <td className="px-6 py-4 text-xs whitespace-nowrap text-gray-400">
+                      <ul className="space-y-1">
+                        <li><strong className="font-semibold text-gray-200">Sub:</strong> {new Date(report.created_at).toLocaleDateString(i18n.language, { day:'numeric', month:'short' })}</li>
+                        {report.in_progress_at && <li className={statusStyles.in_progress.text}><strong className="font-semibold">Prog:</strong> {new Date(report.in_progress_at).toLocaleDateString(i18n.language, { day:'numeric', month:'short' })}</li>}
+                        {report.resolved_at && <li className={statusStyles.resolved.text}><strong className="font-semibold">Res:</strong> {new Date(report.resolved_at).toLocaleDateString(i18n.language, { day:'numeric', month:'short' })}</li>}
+                      </ul>
+                    </td>
+                    <td className="px-6 py-4 space-x-4">
+                      <button onClick={() => setMessagingReport(report)} className="font-medium text-cyan-400 hover:underline">Message</button>
+                      {report.media_url && <a href={report.media_url} target="_blank" rel="noopener noreferrer" className="font-medium text-purple-400 hover:underline">View Media</a>}
+                    </td>
+                  </motion.tr>
+                ))}
+              </motion.tbody>
+            </table>
+          </div>
         </div>
-      </div>
-    </motion.div>
+      </motion.div>
+      <AnimatePresence>
+        {messagingReport && <SendMessageModal report={messagingReport} onClose={() => setMessagingReport(null)} />}
+        {showBroadcast && <SendMessageModal broadcast={true} onClose={() => setShowBroadcast(null)} />}
+      </AnimatePresence>
+    </>
   );
 }
 
