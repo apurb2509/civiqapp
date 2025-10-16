@@ -4,23 +4,9 @@ import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
 
 const statusStyles = {
-  submitted: {
-    badge: 'bg-amber-800 text-amber-100',
-    border: 'border-amber-500',
-    icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-  },
-  in_progress: {
-    badge: 'bg-indigo-800 text-indigo-100',
-    border: 'border-indigo-500',
-    text: 'text-indigo-400',
-    icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-  },
-  resolved: {
-    badge: 'bg-emerald-800 text-emerald-100',
-    border: 'border-emerald-500',
-    text: 'text-emerald-400',
-    icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-  },
+  submitted: { badge: 'bg-amber-800 text-amber-100', border: 'border-amber-500', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg> },
+  in_progress: { badge: 'bg-indigo-800 text-indigo-100', border: 'border-indigo-500', text: 'text-indigo-400', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> },
+  resolved: { badge: 'bg-emerald-800 text-emerald-100', border: 'border-emerald-500', text: 'text-emerald-400', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> },
 };
 
 function ReportsPage() {
@@ -31,33 +17,11 @@ function ReportsPage() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchReports = async () => {
-      try {
-        if (!session) { setReports([]); return; }
-        const response = await fetch('http://localhost:8080/api/reports', {
-          headers: { 'Authorization': `Bearer ${session.access_token}` }
-        });
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const data = await response.json();
-        setReports(data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchReports();
+    const fetchReports = async () => { if (!session) { setReports([]); setLoading(false); return; } try { const response = await fetch('http://localhost:8080/api/reports', { headers: { 'Authorization': `Bearer ${session.access_token}` } }); if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`); const data = await response.json(); setReports(data); } catch (err) { setError(err.message); } finally { setLoading(false); } }; fetchReports();
   }, [session]);
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
-  };
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: { y: 0, opacity: 1 }
-  };
+  const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.1 } } };
+  const itemVariants = { hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1 } };
 
   if (loading) { return <div className="text-center p-10 text-white bg-gray-900 min-h-screen">Loading...</div>; }
   if (error) { return <div className="text-center p-10 text-red-500 bg-gray-900 min-h-screen">Error: {error}</div>; }

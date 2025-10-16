@@ -9,22 +9,22 @@ export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [newReportCount, setNewReportCount] = useState(0);
 
-  // Function to fetch the initial unread count
-  const fetchUnreadCount = async (currentSession) => {
+  // This function fetches the initial counts for both users and admins
+  const fetchSummary = async (currentSession) => {
     if (!currentSession) return;
     try {
-      // This is a placeholder for a more efficient summary endpoint we can build later
-      const { data, error } = await supabase
-        .from('notifications')
-        .select('id', { count: 'exact', head: true })
-        .eq('user_id', currentSession.user.id)
-        .eq('is_read', false);
-      
-      if (error) throw error;
-      setUnreadCount(data ? data.length : 0);
+      const response = await fetch('http://localhost:8080/api/notifications/summary', {
+        headers: { 'Authorization': `Bearer ${currentSession.access_token}` },
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setUnreadCount(data.unreadCount);
+        setNewReportCount(data.newReportCount);
+      }
     } catch (error) {
-      console.error("Failed to fetch unread count:", error);
+      console.error("Failed to fetch summary:", error);
     }
   };
 
@@ -39,9 +39,11 @@ export function AuthProvider({ children }) {
           .eq('id', session.user.id)
           .single();
         setProfile(userProfile);
-        fetchUnreadCount(session); // Fetch count on login
+        fetchSummary(session); // Fetch counts on login/refresh
       } else {
         setProfile(null);
+        setUnreadCount(0);
+        setNewReportCount(0);
       }
       setLoading(false);
     };
@@ -62,28 +64,33 @@ export function AuthProvider({ children }) {
       authListener.subscription.unsubscribe();
     };
   }, []);
-  
-  // Real-time listener for new notifications
+
+  // Real-time listener using Supabase Broadcast
   useEffect(() => {
     if (!user) return;
-    
-    const channel = supabase
-      .channel(`notifications:${user.id}`)
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'notifications',
-        filter: `user_id=eq.${user.id}`
-      }, (payload) => {
-        setUnreadCount(prevCount => prevCount + 1);
-      })
-      .subscribe();
-      
-    return () => {
-      supabase.removeChannel(channel);
-    };
 
-  }, [user]);
+    // Listen for personal notifications (status updates, messages)
+    const userChannel = supabase.channel(`notifications:${user.id}`);
+    userChannel.on('broadcast', { event: 'new_notification' }, () => {
+      setUnreadCount(prev => prev + 1);
+    }).subscribe();
+    
+    // If the user is an admin, also listen for new report submissions
+    let adminChannel;
+    if (profile?.role === 'admin') {
+      adminChannel = supabase.channel('reports');
+      adminChannel.on('broadcast', { event: 'new_report' }, () => {
+        setNewReportCount(prev => prev + 1);
+      }).subscribe();
+    }
+    
+    return () => {
+      supabase.removeChannel(userChannel);
+      if (adminChannel) {
+        supabase.removeChannel(adminChannel);
+      }
+    };
+  }, [user, profile]);
 
   const value = {
     signUp: (data) => supabase.auth.signUp(data),
@@ -92,8 +99,10 @@ export function AuthProvider({ children }) {
     session,
     user,
     profile,
-    unreadCount, // Provide count to the app
-    setUnreadCount, // Provide a way to update the count
+    unreadCount,
+    setUnreadCount,
+    newReportCount,
+    setNewReportCount,
   };
 
   return (
