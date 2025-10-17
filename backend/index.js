@@ -83,8 +83,10 @@ app.patch('/api/admin/reports/:id', async (req, res) => {
     const { data, error } = await supabaseAdmin.from('reports').update(updateData).eq('id', id).select().single();
     if (error) throw error;
     
-    const notificationContent = `Your report for "${data.issue_type}" was updated to: ${status}.`;
-    await createNotification(data.user_id, data.id, notificationContent, 'status_update');
+    if (data.user_id !== user.id) {
+        const notificationContent = `Your report for "${data.issue_type}" was updated to: ${status}.`;
+        await createNotification(data.user_id, data.id, notificationContent, 'status_update');
+    }
 
     res.status(200).json({ message: 'Report status updated successfully', data });
   } catch (error) {
@@ -103,7 +105,9 @@ app.post('/api/admin/messages', async (req, res) => {
     if (profileError || profile.role !== 'admin') return res.status(403).json({ message: 'Admin access required.' });
     const { recipient_id, report_id, content } = req.body;
     if (!recipient_id || !content) return res.status(400).json({ message: 'Recipient and content are required.' });
-    await createNotification(recipient_id, report_id, content, 'admin_message');
+    if (recipient_id !== user.id) {
+        await createNotification(recipient_id, report_id, content, 'admin_message');
+    }
     res.status(201).json({ message: 'Message sent successfully.' });
   } catch (error) {
     console.error('Error sending message:', error.message);
@@ -127,7 +131,9 @@ app.post('/api/admin/broadcast', async (req, res) => {
     if (usersError) throw usersError;
 
     for (const u of users) {
-      await createNotification(u.id, null, content, 'broadcast');
+      if (u.id !== user.id) {
+        await createNotification(u.id, null, content, 'broadcast');
+      }
     }
     res.status(200).json({ message: 'Broadcast sent successfully.' });
   } catch(error) {
@@ -147,6 +153,29 @@ app.post('/api/notifications/mark-read', async (req, res) => {
   } catch (error) {
     console.error('Error marking notifications as read:', error.message);
     res.status(500).json({ message: 'Failed to mark notifications as read.' });
+  }
+});
+
+app.get('/api/notifications/summary', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ message: 'Authentication required.' });
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    if (userError || !user) return res.status(401).json({ message: 'Invalid user.' });
+    let summary = { unreadCount: 0, newReportCount: 0 };
+    const { count: unreadCount, error: unreadError } = await supabaseAdmin.from('notifications').select('*', { count: 'exact', head: true }).eq('user_id', user.id).eq('is_read', false);
+    if (unreadError) throw unreadError;
+    summary.unreadCount = unreadCount;
+    const { data: profile } = await supabaseAdmin.from('profiles').select('role').eq('id', user.id).single();
+    if (profile && profile.role === 'admin') {
+      const { count: newReportCount, error: reportCountError } = await supabaseAdmin.from('reports').select('*', { count: 'exact', head: true }).eq('status', 'submitted');
+      if (reportCountError) throw reportCountError;
+      summary.newReportCount = newReportCount;
+    }
+    res.status(200).json(summary);
+  } catch(error) {
+    console.error('Error fetching notification summary:', error.message);
+    res.status(500).json({ message: 'Failed to fetch notification summary.' });
   }
 });
 

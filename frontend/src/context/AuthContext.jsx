@@ -3,7 +3,6 @@ import { supabase } from '../supabaseClient';
 
 const AuthContext = createContext();
 
-
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(null);
   const [user, setUser] = useState(null);
@@ -58,15 +57,19 @@ export function AuthProvider({ children }) {
     if (!user) return;
     
     const userChannel = supabase.channel(`notifications:${user.id}`);
-    userChannel.on('broadcast', { event: 'new_notification' }, () => {
-      setUnreadCount(prev => prev + 1);
+    userChannel.on('broadcast', { event: 'new_notification' }, (payload) => {
+      if(payload.payload.user_id === user.id) {
+        setUnreadCount(prev => prev + 1);
+      }
     }).subscribe();
     
     let adminChannel;
     if (profile?.role === 'admin') {
       adminChannel = supabase.channel('reports');
-      adminChannel.on('broadcast', { event: 'new_report' }, () => {
-        setNewReportCount(prev => prev + 1);
+      adminChannel.on('broadcast', { event: 'new_report' }, (payload) => {
+        if (payload.payload.user_id !== user.id) {
+          setNewReportCount(prev => prev + 1);
+        }
       }).subscribe();
     }
     

@@ -80,7 +80,7 @@ function Navbar() {
               </select>
               <div className="w-px h-6 bg-gray-600"></div>
 
-              {/* ADD NOTIFICATION BELL FOR LOGGED IN USERS */}
+              {/* NOTIFICATION BELL FOR LOGGED IN USERS (DESKTOP) */}
               {user && <NotificationBell />}
 
               <div ref={userMenuRef} className="relative">
@@ -108,7 +108,7 @@ function Navbar() {
           <div className="md:hidden flex items-center justify-between p-2 w-full bg-gray-800 border border-gray-700 rounded-full shadow-lg">
              <Link to="/" className="text-xl font-bold text-white pl-3">{t('navbar.brand')}</Link>
              <div className="flex items-center">
-                {/* ADD NOTIFICATION BELL FOR MOBILE */}
+                {/* NOTIFICATION BELL FOR MOBILE */}
                 {user && <NotificationBell />}
                 <button onClick={() => setIsMenuOpen(true)} className="p-2 mr-1"><svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg></button>
              </div>

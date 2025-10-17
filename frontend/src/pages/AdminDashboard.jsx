@@ -79,6 +79,7 @@ function AdminDashboard() {
             <table className="min-w-full text-sm text-left text-gray-300">
               <thead className="text-xs text-gray-400 uppercase bg-gray-700">
                 <tr>
+                  <th scope="col" className="px-6 py-3">S.No.</th>
                   <th scope="col" className="px-6 py-3">User</th>
                   <th scope="col" className="px-6 py-3">Issue</th>
                   <th scope="col" className="px-6 py-3">Status</th>
@@ -87,8 +88,9 @@ function AdminDashboard() {
                 </tr>
               </thead>
               <motion.tbody variants={containerVariants}>
-                {reports.map((report) => (
+                {reports.map((report, index) => (
                   <motion.tr key={report.id} variants={itemVariants} className="border-b border-gray-700 hover:bg-gray-700/50">
+                    <td className="px-6 py-4">{index + 1}</td>
                     <td className="px-6 py-4 text-xs text-gray-400" title={report.user_id}>{report.profiles?.email || 'N/A'}</td>
                     <td className="px-6 py-4">
                       <div className="font-medium whitespace-nowrap">{t(`reportForm.issueTypes.${report.issue_type}`)}</div>
