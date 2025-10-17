@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import FileUpload from './FileUpload';
@@ -13,6 +13,7 @@ function ReportForm() {
   const [file, setFile] = useState(null);
   const [formKey, setFormKey] = useState(Date.now());
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const cardRef = useRef(null);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -24,25 +25,24 @@ function ReportForm() {
       alert(t('alerts.fillAllFields'));
       return;
     }
+
     setIsSubmitting(true);
-    
+
     const formData = new FormData();
     formData.append('issueType', issueType);
     formData.append('description', description);
-    if (file) {
-      formData.append('file', file);
-    }
+    if (file) formData.append('file', file);
 
     try {
       const response = await fetch('http://localhost:8080/api/reports', {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${session.access_token}` },
+        headers: { Authorization: `Bearer ${session.access_token}` },
         body: formData,
       });
 
       const result = await response.json();
       if (!response.ok) throw new Error(result.message || 'An unknown error occurred.');
-      
+
       alert(t('alerts.reportSuccess'));
       setIssueType('');
       setDescription('');
@@ -59,41 +59,102 @@ function ReportForm() {
   const issueTypes = ['pothole', 'treeCutting', 'waterClogging', 'debris', 'unsafeStreet'];
   const isDisabled = !session || isSubmitting;
 
+  // 3D tilt effect
+  const handleMouseMove = (e) => {
+    const rect = cardRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const midX = rect.width / 2;
+    const midY = rect.height / 2;
+
+    const rotateX = ((y - midY) / midY) * -6;
+    const rotateY = ((x - midX) / midX) * 6;
+
+    cardRef.current.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+  };
+
+  const handleMouseLeave = () => {
+    cardRef.current.style.transform = 'rotateX(0deg) rotateY(0deg)';
+  };
+
   return (
-    <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md mx-4 relative">
-      {!session && ( <div className="absolute inset-0 bg-gray-800 bg-opacity-80 flex justify-center items-center rounded-lg z-10"> <p className="text-white font-bold text-lg">Please log in to submit a report.</p> </div> )}
-      <h2 className="text-2xl font-bold text-white mb-6 text-center">{t('reportForm.title')}</h2>
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label htmlFor="issueType" className="block text-gray-300 text-sm font-bold mb-2">{t('reportForm.issueTypeLabel')}</label>
-          <select id="issueType" name="issueType" value={issueType} onChange={(e) => setIssueType(e.target.value)}
-            className="shadow appearance-none border rounded w-full py-3 px-4 bg-gray-700 border-gray-600 text-white leading-tight focus:outline-none focus:shadow-outline focus:border-cyan-500"
-            disabled={isDisabled} required>
+    <div
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="relative w-full max-w-2xl mx-auto rounded-3xl overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.6)] bg-slate-900/60 border border-slate-700/40 backdrop-blur-2xl p-8 sm:p-10 transition-transform duration-300 perspective-[1000px]"
+    >
+      {!session && (
+        <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-md flex justify-center items-center z-20 rounded-3xl">
+          <p className="text-white font-bold text-lg text-center">
+            Please log in to submit a report.
+          </p>
+        </div>
+      )}
+
+      <h2 className="text-3xl sm:text-4xl font-extrabold mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 drop-shadow-[0_0_25px_rgba(56,189,248,0.3)]">
+        {t('reportForm.title')}
+      </h2>
+
+      <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
+        <div>
+          <label className="block text-gray-300 text-sm font-semibold mb-2">
+            {t('reportForm.issueTypeLabel')}
+          </label>
+          <select
+            value={issueType}
+            onChange={(e) => setIssueType(e.target.value)}
+            className="w-full px-4 py-3 bg-slate-800/60 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-300 shadow-inner shadow-black/20"
+            disabled={isDisabled}
+            required
+          >
             <option value="">{t('reportForm.issueTypePlaceholder')}</option>
-            {issueTypes.map(type => ( <option key={type} value={type}>{t(`reportForm.issueTypes.${type}`)}</option> ))}
+            {issueTypes.map((type) => (
+              <option key={type} value={type}>
+                {t(`reportForm.issueTypes.${type}`)}
+              </option>
+            ))}
           </select>
         </div>
-        <div className="mb-6">
-          <label htmlFor="description" className="block text-gray-300 text-sm font-bold mb-2">{t('reportForm.descriptionLabel')}</label>
-          <textarea id="description" name="description" rows="4" placeholder={t('reportForm.descriptionPlaceholder')} value={description} onChange={(e) => setDescription(e.target.value)}
-            className="shadow appearance-none border rounded w-full py-3 px-4 bg-gray-700 border-gray-600 text-white leading-tight focus:outline-none focus:shadow-outline focus:border-cyan-500"
-            disabled={isDisabled} required></textarea>
+
+        <div>
+          <label className="block text-gray-300 text-sm font-semibold mb-2">
+            {t('reportForm.descriptionLabel')}
+          </label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows="4"
+            placeholder={t('reportForm.descriptionPlaceholder')}
+            className="w-full px-4 py-3 bg-slate-800/60 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-300 shadow-inner shadow-black/20 resize-none"
+            disabled={isDisabled}
+            required
+          />
         </div>
-        <div className="mb-6">
-          <label className="block text-gray-300 text-sm font-bold mb-2">{t('reportForm.mediaLabel')}</label>
-          <FileUpload key={formKey} onFileChange={(selectedFile) => setFile(selectedFile)} />
-          <CameraCapture onFileChange={(selectedFile) => setFile(selectedFile)} />
-          <VoiceRecorder onFileChange={(selectedFile) => setFile(selectedFile)} />
+
+        <div>
+          <label className="block text-gray-300 text-sm font-semibold mb-2">
+            {t('reportForm.mediaLabel')}
+          </label>
+          <div className="space-y-4 bg-slate-800/40 border border-slate-700/50 p-4 rounded-xl shadow-inner shadow-black/20">
+            <FileUpload key={formKey} onFileChange={(selectedFile) => setFile(selectedFile)} />
+            <CameraCapture onFileChange={(selectedFile) => setFile(selectedFile)} />
+            <VoiceRecorder onFileChange={(selectedFile) => setFile(selectedFile)} />
+          </div>
         </div>
-        <div className="flex items-center justify-center">
-          <button type="submit"
-            className="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-6 rounded-lg focus:outline-none focus:shadow-outline transition-colors duration-300 w-full disabled:bg-gray-500 disabled:cursor-not-allowed"
-            disabled={isDisabled} >
-            {isSubmitting ? t('reportForm.submittingButton') : t('reportForm.submitButton')}
-          </button>
-        </div>
+
+        <button
+          type="submit"
+          disabled={isDisabled}
+          className="w-full py-3.5 font-semibold text-lg rounded-xl bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 text-white shadow-lg shadow-cyan-500/30 hover:shadow-cyan-400/40 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isSubmitting ? t('reportForm.submittingButton') : t('reportForm.submitButton')}
+        </button>
       </form>
+
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/2 h-[2px] bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 opacity-60 rounded-full"></div>
     </div>
   );
 }
+
 export default ReportForm;
