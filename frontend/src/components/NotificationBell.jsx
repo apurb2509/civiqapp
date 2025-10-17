@@ -33,7 +33,6 @@ function NotificationBell() {
       if (!response.ok) throw new Error('Failed to fetch notifications');
       const data = await response.json();
       setNotifications(data);
-      // Immediately mark as read and update UI when opened
       if (profile?.role !== 'admin' && unreadCount > 0) {
         markAsRead();
         setUnreadCount(0);
@@ -47,9 +46,7 @@ function NotificationBell() {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) setIsOpen(false);
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -58,19 +55,19 @@ function NotificationBell() {
   const handleToggle = () => {
     const newIsOpen = !isOpen;
     setIsOpen(newIsOpen);
-    if (newIsOpen) {
-      fetchNotifications();
-    }
+    if (newIsOpen) fetchNotifications();
   };
+  
+  const notificationCount = unreadCount;
 
   return (
     <div ref={dropdownRef} className="relative">
       <button onClick={handleToggle} className="relative text-gray-400 hover:text-white p-2 rounded-full">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-        {unreadCount > 0 && (
+        {notificationCount > 0 && (
           <span className="absolute top-1 right-1 flex h-4 w-4">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500 text-white text-xs items-center justify-center">{unreadCount}</span>
+            <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500 text-white text-xs items-center justify-center">{notificationCount}</span>
           </span>
         )}
       </button>

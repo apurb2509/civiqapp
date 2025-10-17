@@ -13,6 +13,7 @@ function SendMessageModal({ report, onClose, broadcast = false }) {
     setIsSending(true);
 
     const endpoint = broadcast ? 'http://localhost:8080/api/admin/broadcast' : 'http://localhost:8080/api/admin/messages';
+    
     const body = broadcast ? { content: message } : {
       recipient_id: report.user_id,
       report_id: report.id,
@@ -28,7 +29,10 @@ function SendMessageModal({ report, onClose, broadcast = false }) {
         },
         body: JSON.stringify(body),
       });
-      if (!response.ok) throw new Error('Failed to send message.');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to send message.');
+      }
       alert('Message sent successfully!');
       onClose();
     } catch (error) {
@@ -43,7 +47,7 @@ function SendMessageModal({ report, onClose, broadcast = false }) {
       <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="bg-gray-800 rounded-lg shadow-xl w-full max-w-md">
         <div className="p-6 border-b border-gray-700">
           <h3 className="text-xl font-bold text-white">{broadcast ? 'Send Broadcast Message' : 'Send Message'}</h3>
-          {!broadcast && <p className="text-sm text-gray-400 mt-1">Regarding report #{report.id} ({report.issue_type})</p>}
+          {!broadcast && report && <p className="text-sm text-gray-400 mt-1">Regarding report #{report.id} ({report.issue_type})</p>}
         </div>
         <form onSubmit={handleSendMessage}>
           <div className="p-6">
@@ -66,5 +70,4 @@ function SendMessageModal({ report, onClose, broadcast = false }) {
     </div>
   );
 }
-
 export default SendMessageModal;

@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import SendMessageModal from '../components/SendMessageModal';
+import MediaViewerModal from '../components/MediaViewerModal';
 
 const statusStyles = {
   submitted: { badge: 'bg-amber-800 text-amber-100', text: 'text-amber-400' },
@@ -18,6 +19,7 @@ function AdminDashboard() {
   const [error, setError] = useState(null);
   const [messagingReport, setMessagingReport] = useState(null);
   const [showBroadcast, setShowBroadcast] = useState(false);
+  const [viewingMedia, setViewingMedia] = useState(null);
 
   useEffect(() => {
     const fetchAdminReports = async () => {
@@ -59,15 +61,8 @@ function AdminDashboard() {
     }
   };
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.05 } }
-  };
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: { y: 0, opacity: 1 }
-  };
+  const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.05 } } };
+  const itemVariants = { hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1 } };
 
   if (loading) { return <div className="bg-gray-900 min-h-screen text-white text-center p-10">Loading Dashboard...</div>; }
   if (error) { return <div className="bg-gray-900 min-h-screen text-red-500 text-center p-10">Error: {error}</div>; }
@@ -108,14 +103,14 @@ function AdminDashboard() {
                     </td>
                     <td className="px-6 py-4 text-xs whitespace-nowrap text-gray-400">
                       <ul className="space-y-1">
-                        <li><strong className="font-semibold text-gray-200">Sub:</strong> {new Date(report.created_at).toLocaleDateString(i18n.language, { day:'numeric', month:'short' })}</li>
-                        {report.in_progress_at && <li className={statusStyles.in_progress.text}><strong className="font-semibold">Prog:</strong> {new Date(report.in_progress_at).toLocaleDateString(i18n.language, { day:'numeric', month:'short' })}</li>}
-                        {report.resolved_at && <li className={statusStyles.resolved.text}><strong className="font-semibold">Res:</strong> {new Date(report.resolved_at).toLocaleDateString(i18n.language, { day:'numeric', month:'short' })}</li>}
+                        <li><strong className="font-semibold text-gray-200">Submitted:</strong> {new Date(report.created_at).toLocaleDateString(i18n.language, { day:'numeric', month:'short' })}</li>
+                        {report.in_progress_at && <li className={statusStyles.in_progress.text}><strong className="font-semibold">In Progress:</strong> {new Date(report.in_progress_at).toLocaleDateString(i18n.language, { day:'numeric', month:'short' })}</li>}
+                        {report.resolved_at && <li className={statusStyles.resolved.text}><strong className="font-semibold">Resolved:</strong> {new Date(report.resolved_at).toLocaleDateString(i18n.language, { day:'numeric', month:'short' })}</li>}
                       </ul>
                     </td>
                     <td className="px-6 py-4 space-x-4">
                       <button onClick={() => setMessagingReport(report)} className="font-medium text-cyan-400 hover:underline">Message</button>
-                      {report.media_url && <a href={report.media_url} target="_blank" rel="noopener noreferrer" className="font-medium text-purple-400 hover:underline">View Media</a>}
+                      {report.media_url && <button onClick={() => setViewingMedia(report.media_url)} className="font-medium text-purple-400 hover:underline">View Media</button>}
                     </td>
                   </motion.tr>
                 ))}
@@ -127,6 +122,7 @@ function AdminDashboard() {
       <AnimatePresence>
         {messagingReport && <SendMessageModal report={messagingReport} onClose={() => setMessagingReport(null)} />}
         {showBroadcast && <SendMessageModal broadcast={true} onClose={() => setShowBroadcast(null)} />}
+        {viewingMedia && <MediaViewerModal mediaUrl={viewingMedia} onClose={() => setViewingMedia(null)} />}
       </AnimatePresence>
     </>
   );
