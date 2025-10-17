@@ -22,7 +22,7 @@ const createNotification = async (userId, reportId, content, type) => {
 
 app.get('/', (req, res) => { res.status(200).json({ message: 'Welcome to the CiviQ Backend API!' }); });
 
-app.post('/api/reports', async (req, res) => {
+app.post('/api/reports', upload.single('file'), async (req, res) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ message: 'Authentication token is required.' });
@@ -73,6 +73,10 @@ app.patch('/api/admin/reports/:id', async (req, res) => {
       updateData.in_progress_at = new Date().toISOString();
       updateData.resolved_at = null;
     } else if (status === 'resolved') {
+      const { data: currentReport } = await supabaseAdmin.from('reports').select('in_progress_at').eq('id', id).single();
+      if (!currentReport.in_progress_at) {
+        updateData.in_progress_at = new Date().toISOString();
+      }
       updateData.resolved_at = new Date().toISOString();
     }
     

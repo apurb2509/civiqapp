@@ -29,14 +29,14 @@ function ReportForm() {
     const formData = new FormData();
     formData.append('issueType', issueType);
     formData.append('description', description);
-    if (file) formData.append('file', file);
+    if (file) {
+      formData.append('file', file);
+    }
 
     try {
       const response = await fetch('http://localhost:8080/api/reports', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-        },
+        headers: { 'Authorization': `Bearer ${session.access_token}` },
         body: formData,
       });
 
@@ -61,18 +61,14 @@ function ReportForm() {
 
   return (
     <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md mx-4 relative">
-      {!session && (
-        <div className="absolute inset-0 bg-gray-800 bg-opacity-80 flex justify-center items-center rounded-lg z-10">
-          <p className="text-white font-bold text-lg">Please log in to submit a report.</p>
-        </div>
-      )}
+      {!session && ( <div className="absolute inset-0 bg-gray-800 bg-opacity-80 flex justify-center items-center rounded-lg z-10"> <p className="text-white font-bold text-lg">Please log in to submit a report.</p> </div> )}
       <h2 className="text-2xl font-bold text-white mb-6 text-center">{t('reportForm.title')}</h2>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label htmlFor="issueType" className="block text-gray-300 text-sm font-bold mb-2">{t('reportForm.issueTypeLabel')}</label>
           <select id="issueType" name="issueType" value={issueType} onChange={(e) => setIssueType(e.target.value)}
             className="shadow appearance-none border rounded w-full py-3 px-4 bg-gray-700 border-gray-600 text-white leading-tight focus:outline-none focus:shadow-outline focus:border-cyan-500"
-            disabled={isDisabled} >
+            disabled={isDisabled} required>
             <option value="">{t('reportForm.issueTypePlaceholder')}</option>
             {issueTypes.map(type => ( <option key={type} value={type}>{t(`reportForm.issueTypes.${type}`)}</option> ))}
           </select>
@@ -81,7 +77,7 @@ function ReportForm() {
           <label htmlFor="description" className="block text-gray-300 text-sm font-bold mb-2">{t('reportForm.descriptionLabel')}</label>
           <textarea id="description" name="description" rows="4" placeholder={t('reportForm.descriptionPlaceholder')} value={description} onChange={(e) => setDescription(e.target.value)}
             className="shadow appearance-none border rounded w-full py-3 px-4 bg-gray-700 border-gray-600 text-white leading-tight focus:outline-none focus:shadow-outline focus:border-cyan-500"
-            disabled={isDisabled} ></textarea>
+            disabled={isDisabled} required></textarea>
         </div>
         <div className="mb-6">
           <label className="block text-gray-300 text-sm font-bold mb-2">{t('reportForm.mediaLabel')}</label>
