@@ -217,58 +217,70 @@ function HomePage() {
         </motion.div>
       </section>
 
-      {/* 3D Infrastructure Showcase - City Hologram */}
-      <motion.section
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.2 }}
-        variants={containerVariants}
-        className="relative py-24 bg-slate-900/50 overflow-hidden"
+{/* Infrastructure Showcase - Interactive Video Section */}
+<motion.section
+  initial="hidden"
+  whileInView="visible"
+  viewport={{ once: true, amount: 0.2 }}
+  variants={containerVariants}
+  className="relative py-24 bg-slate-900/50 overflow-hidden"
+>
+  <div className="w-full px-0">
+    {/* Title & Subtitle */}
+    <div className="text-center mb-16 px-6">
+      <motion.h2
+        variants={itemVariants}
+        className="text-4xl sm:text-5xl font-bold mb-4 text-white"
       >
-        <div className="w-full px-0">
-          <div className="text-center mb-16 px-6">
-            <motion.h2 
-              variants={itemVariants} 
-              className="text-4xl sm:text-5xl font-bold mb-4 text-white"
-            >
-              Monitor Urban Infrastructure
-            </motion.h2>
-            <motion.p 
-              variants={itemVariants} 
-              className="text-gray-400 text-lg max-w-2xl mx-auto"
-            >
-              Real-time visualization of civic issues - potholes, water clogging, unsafe streets, and more
-            </motion.p>
-          </div>
+        Monitor Urban Infrastructure
+      </motion.h2>
+      <motion.p
+        variants={itemVariants}
+        className="text-gray-400 text-lg max-w-2xl mx-auto"
+      >
+        Real-time visualization of civic issues — potholes, water clogging, unsafe streets, and more
+      </motion.p>
+    </div>
 
-          <motion.div 
-            variants={itemVariants}
-            className="relative w-full"
-          >
-            <div className="relative w-full h-[400px] sm:h-[500px] md:h-[600px] bg-gradient-to-b from-slate-800/30 to-slate-900/50">
-              <model-viewer
-                src="https://res.cloudinary.com/dw28vl3tm/image/upload/v1760728109/earth_hologram_kxsiyd.glb"
-                alt="Infrastructure Overview"
-                camera-controls
-                touch-action="pan-y"
-                shadow-intensity="1"
-                environment-image="neutral"
-                exposure="1.2"
-                camera-orbit="45deg 75deg 5m"
-                auto-rotate
-                auto-rotate-delay="1000"
-                rotation-per-second="20deg"
-                min-camera-orbit="auto auto 3m"
-                max-camera-orbit="auto auto 15m"
-                interpolation-decay="200"
-                style={{ width: '100%', height: '100%' }}
-              />
-            </div>
-          </motion.div>
-        </div>
-      </motion.section>
+    {/* Video Showcase */}
+    <motion.div variants={itemVariants} className="relative w-full group">
+      <div className="relative w-full h-[400px] sm:h-[500px] md:h-[600px] bg-gradient-to-b from-slate-800/30 to-slate-900/50 overflow-hidden rounded-2xl shadow-2xl">
+        <video
+          id="infrastructureVideo"
+          src="https://res.cloudinary.com/dxasdsx7c/video/upload/v1760805426/civiq_homepage_video_vr1pzu.mp4"
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          loop
+          autoPlay
+          playsInline
+          muted
+        />
 
-      import { motion } from "framer-motion";
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-slate-900/30 to-slate-950/70 pointer-events-none"></div>
+
+        {/* Mute / Unmute Button */}
+        <button
+          onClick={() => {
+            const video = document.getElementById('infrastructureVideo');
+            if (video.muted) {
+              video.muted = false;
+              document.getElementById('soundLabel').textContent = 'Sound: ON';
+            } else {
+              video.muted = true;
+              document.getElementById('soundLabel').textContent = 'Sound: OFF';
+            }
+          }}
+          className="absolute bottom-6 right-6 bg-slate-900/70 backdrop-blur-md text-white px-5 py-2 rounded-full border border-cyan-400/50 text-sm font-medium hover:bg-cyan-600/80 hover:border-cyan-400 transition-all z-20"
+        >
+          <span id="soundLabel">Sound: OFF</span>
+        </button>
+      </div>
+    </motion.div>
+  </div>
+</motion.section>
+
+
+import { motion } from "framer-motion";
 import { useRef } from "react";
 
 {/* How It Works Section */}
