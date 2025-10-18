@@ -203,15 +203,48 @@ function HomePage() {
               variants={itemVariants}
               className="flex justify-center gap-4 flex-wrap"
             >
-              <a 
-                href="#report-form" 
-                className="inline-flex items-center gap-2 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-4 px-8 rounded-md text-base transition-all duration-200 shadow-xl"
-              >
-                {t('homePage.reportButton')}
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </a>
+<motion.a
+  onClick={(e) => {
+    e.preventDefault();
+    const formSection = document.getElementById("report-form");
+    if (formSection) {
+      formSection.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }}
+  href="#report-form"
+  whileHover={{ scale: 1.08 }}
+  whileTap={{ scale: 0.96 }}
+  className="relative inline-flex items-center gap-3 px-10 py-4 font-semibold text-white text-lg rounded-xl 
+             bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-600 
+             shadow-[0_0_10px_rgba(56,189,248,0.35)] 
+             hover:shadow-[0_0_25px_rgba(56,189,248,0.85)] 
+             transition-all duration-300 group overflow-hidden cursor-pointer"
+>
+  {/* Subtle glow layer (soft by default) */}
+  <span className="absolute inset-0 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 opacity-20 blur-lg group-hover:opacity-60 transition-all duration-500"></span>
+
+  {/* Button text + icon */}
+  <span className="relative z-10 flex items-center gap-2">
+    {t('homePage.reportButton')}
+    <svg
+      className="w-5 h-5 transform group-hover:translate-x-1 transition-transform duration-300"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M17 8l4 4m0 0l-4 4m4-4H3"
+      />
+    </svg>
+  </span>
+
+  {/* Soft border glow */}
+  <span className="absolute inset-0 rounded-xl border border-cyan-400/30 group-hover:border-cyan-300/70 transition-all duration-500"></span>
+</motion.a>
+
             </motion.div>
           )}
         </motion.div>
