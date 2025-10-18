@@ -399,9 +399,9 @@ import { useRef } from "react";
               transformOrigin: "center",
             }}
           >
-            {/* Glowing gradient ring */}
+            {/* Glowing gradient ring — reduced base intensity */}
             <div
-              className={`absolute -inset-[1px] rounded-2xl bg-gradient-to-br ${step.gradient} opacity-60 group-hover:opacity-100 blur-xl transition-all duration-500`}
+              className={`absolute -inset-[1px] rounded-2xl bg-gradient-to-br ${step.gradient} opacity-25 group-hover:opacity-100 blur-lg transition-all duration-500`}
             ></div>
 
             {/* Step Card */}
@@ -409,35 +409,34 @@ import { useRef } from "react";
               className="relative bg-slate-900/80 backdrop-blur-md p-10 rounded-2xl border border-slate-800/70 hover:border-cyan-400/40 shadow-xl shadow-black/30 transition-all duration-500"
               style={{ transformStyle: "preserve-3d" }}
             >
-{/* Step Number Badge */}
-<div className="flex justify-center mb-8 relative">
-  <div
-    className={`flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br ${step.gradient} bg-opacity-20 group-hover:bg-opacity-40 transition-all duration-300 shadow-inner`}
-    style={{ transform: "translateZ(30px)" }}
-  >
-    <motion.span
-      className={`text-5xl font-extrabold bg-gradient-to-br ${step.gradient} bg-clip-text text-transparent`}
-      style={{
-        transform: "translateZ(60px)",
-        WebkitTextStroke: "1px rgba(255,255,255,0.25)", // subtle white outline
-        textShadow: "0 2px 15px rgba(0,255,255,0.25)", // soft glow
-      }}
-      whileHover={{ scale: 1.3, rotate: 5 }}
-    >
-      {step.num}
-    </motion.span>
+              {/* Step Number Badge */}
+              <div className="flex justify-center mb-8 relative">
+                <div
+                  className={`flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br ${step.gradient} bg-opacity-15 group-hover:bg-opacity-40 transition-all duration-300 shadow-inner`}
+                  style={{ transform: "translateZ(30px)" }}
+                >
+                  <motion.span
+                    className={`text-5xl font-extrabold bg-gradient-to-br ${step.gradient} bg-clip-text text-transparent`}
+                    style={{
+                      transform: "translateZ(60px)",
+                      WebkitTextStroke: "1px rgba(255,255,255,0.5)", // softer white outline
+                      textShadow: "0 2px 8px rgba(0,255,255,0.15)", // reduced glow intensity
+                    }}
+                    whileHover={{ scale: 1.3, rotate: 5 }}
+                  >
+                    {step.num}
+                  </motion.span>
 
-    {/* Small floating popup box */}
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      whileHover={{ opacity: 1, y: -30 }}
-      className="absolute -top-6 left-1/2 -translate-x-1/2 bg-cyan-500/20 text-white text-xs font-semibold px-2 py-1 rounded-md backdrop-blur-md shadow-md pointer-events-none"
-    >
-      Step {step.num}
-    </motion.div>
-  </div>
-</div>
-
+                  {/* Floating popup label */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    whileHover={{ opacity: 1, y: -30 }}
+                    className="absolute -top-6 left-1/2 -translate-x-1/2 bg-cyan-500/15 text-white text-xs font-semibold px-2 py-1 rounded-md backdrop-blur-md shadow-md pointer-events-none"
+                  >
+                    Step {step.num}
+                  </motion.div>
+                </div>
+              </div>
 
               {/* Title */}
               <h3
@@ -457,7 +456,7 @@ import { useRef } from "react";
 
               {/* Subtle glowing line at bottom */}
               <div
-                className={`absolute bottom-0 left-1/2 -translate-x-1/2 w-2/3 h-[2px] bg-gradient-to-r ${step.gradient} opacity-30 group-hover:opacity-100 transition-all duration-500 rounded-full`}
+                className={`absolute bottom-0 left-1/2 -translate-x-1/2 w-2/3 h-[2px] bg-gradient-to-r ${step.gradient} opacity-20 group-hover:opacity-100 transition-all duration-500 rounded-full`}
               ></div>
             </div>
           </motion.div>
