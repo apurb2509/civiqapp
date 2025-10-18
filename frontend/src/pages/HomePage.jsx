@@ -182,6 +182,37 @@ function HomePage() {
           variants={containerVariants} 
           className="relative z-20 max-w-5xl mx-auto text-center px-6"
         >
+
+
+
+
+
+<motion.h2
+  initial={{ y: -400, opacity: 0 }}
+  animate={{ 
+    y: [ -400, 30, -20, 15, -8, 0 ], // 5 bounces with greater heights
+    opacity: [0, 1, 1, 1, 1, 1]
+  }}
+  transition={{ 
+    duration: 0.9, // slightly longer to accommodate more bounces
+    ease: "easeOut",
+    times: [0, 0.4, 0.6, 0.75, 0.88, 1] // well-spaced bounce timing
+  }}
+  className="text-7xl sm:text-9xl font-extrabold uppercase mb-1 relative text-transparent bg-clip-text"
+  style={{
+    backgroundImage: 'linear-gradient(135deg, #06b6d4, #6366f1, #9333ea)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    backgroundClip: 'text',
+    textShadow: '0 0 12px rgba(99, 102, 241, 0.4), 0 0 24px rgba(147, 51, 234, 0.25)',
+    filter: 'brightness(1.2) saturate(1.3)',
+  }}
+>
+  {t('navbar.brand')}
+</motion.h2>
+
+
+
           <motion.h1 
             variants={itemVariants} 
             className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold mb-6 tracking-tight drop-shadow-2xl"
