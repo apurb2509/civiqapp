@@ -87,17 +87,29 @@ function Navbar() {
             </div>
 
             <div className="flex items-center gap-3">
-              <select
-                onChange={(e) => changeLanguage(e.target.value)}
-                value={i18n.language}
-                className="bg-slate-800/60 border border-slate-700 rounded-full px-3 py-2 text-white text-sm focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-300 cursor-pointer shadow-inner shadow-black/20"
-              >
-                {languages.map((lng) => (
-                  <option key={lng.code} value={lng.code} className="bg-slate-900 font-semibold">
-                    {lng.lang}
-                  </option>
-                ))}
-              </select>
+            <div className="relative inline-block">
+  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+    <svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+    </svg>
+  </div>
+  <select
+    onChange={(e) => changeLanguage(e.target.value)}
+    value={i18n.language}
+    className="appearance-none bg-gradient-to-r from-slate-800/80 to-slate-800/60 border border-slate-700/50 rounded-lg pl-10 pr-10 py-2.5 text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all duration-200 cursor-pointer shadow-lg shadow-black/10 hover:border-cyan-500/30 hover:shadow-cyan-500/10"
+  >
+    {languages.map((lng) => (
+      <option key={lng.code} value={lng.code} className="bg-slate-900 text-white font-semibold py-2">
+        {lng.lang}
+      </option>
+    ))}
+  </select>
+  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+    </svg>
+  </div>
+</div>
 
               <div className="w-px h-6 bg-gray-600"></div>
               {user && <NotificationBell />}

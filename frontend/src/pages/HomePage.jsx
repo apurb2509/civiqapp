@@ -190,15 +190,15 @@ function HomePage() {
 <motion.h2
   initial={{ y: -400, opacity: 0 }}
   animate={{ 
-    y: [ -400, 30, -20, 15, -8, 0 ], // 5 bounces with greater heights
+    y: [ -400, 30, -20, 15, -8, 0 ], 
     opacity: [0, 1, 1, 1, 1, 1]
   }}
   transition={{ 
-    duration: 0.9, // slightly longer to accommodate more bounces
+    duration: 0.9, 
     ease: "easeOut",
-    times: [0, 0.4, 0.6, 0.75, 0.88, 1] // well-spaced bounce timing
+    times: [0, 0.4, 0.6, 0.75, 0.88, 1] 
   }}
-  className="text-7xl sm:text-9xl font-extrabold uppercase mb-1 relative text-transparent bg-clip-text"
+  className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold uppercase mb-1 relative text-transparent bg-clip-text"
   style={{
     backgroundImage: 'linear-gradient(135deg, #06b6d4, #6366f1, #9333ea)',
     WebkitBackgroundClip: 'text',
@@ -212,16 +212,17 @@ function HomePage() {
 </motion.h2>
 
 
-
-          <motion.h1 
-            variants={itemVariants} 
-            className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold mb-6 tracking-tight drop-shadow-2xl"
-          >
-            <span className="block text-white leading-tight">
-              {t('homePage.heroTitle')}
-            </span>
-          </motion.h1>
+<motion.h1  
+  variants={itemVariants}  
+  className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 tracking-tight drop-shadow-2xl" 
+> 
+  <span className="block text-white leading-tight"> 
+    {t('homePage.heroTitle')} 
+  </span> 
+</motion.h1>
           
+
+
           <motion.p 
             variants={itemVariants} 
             className="text-lg sm:text-xl md:text-2xl mb-12 text-gray-200 max-w-3xl mx-auto font-light drop-shadow-lg"
@@ -229,6 +230,8 @@ function HomePage() {
             {t('homePage.heroSubtitle')}
           </motion.p>
           
+
+
           {profile?.role !== 'admin' && (
             <motion.div 
               variants={itemVariants}
