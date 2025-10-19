@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import FileUpload from './FileUpload';
@@ -13,7 +13,29 @@ function ReportForm() {
   const [file, setFile] = useState(null);
   const [formKey, setFormKey] = useState(Date.now());
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [location, setLocation] = useState(null);
+  const [locationError, setLocationError] = useState(null);
   const cardRef = useRef(null);
+
+  // ✅ Get user location on mount
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      setLocationError('Geolocation is not supported by your browser.');
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setLocation({
+          lat: pos.coords.latitude,
+          lon: pos.coords.longitude,
+        });
+      },
+      (err) => {
+        console.error('Location permission denied:', err);
+        setLocationError('Unable to get your location. Please enable location access.');
+      }
+    );
+  }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -25,12 +47,18 @@ function ReportForm() {
       alert(t('alerts.fillAllFields'));
       return;
     }
+    if (!location) {
+      alert('Location is required. Please enable location access in your browser.');
+      return;
+    }
 
     setIsSubmitting(true);
 
     const formData = new FormData();
     formData.append('issueType', issueType);
     formData.append('description', description);
+    formData.append('lat', location.lat);
+    formData.append('lon', location.lon);
     if (file) formData.append('file', file);
 
     try {
@@ -59,7 +87,7 @@ function ReportForm() {
   const issueTypes = ['pothole', 'treeCutting', 'waterClogging', 'debris', 'unsafeStreet'];
   const isDisabled = !session || isSubmitting;
 
-  // 3D tilt effect
+  // 🎢 3D tilt effect
   const handleMouseMove = (e) => {
     const rect = cardRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
@@ -141,6 +169,15 @@ function ReportForm() {
             <CameraCapture onFileChange={(selectedFile) => setFile(selectedFile)} />
             <VoiceRecorder onFileChange={(selectedFile) => setFile(selectedFile)} />
           </div>
+        </div>
+
+        {/* ✅ Show location status */}
+        <div className="text-sm text-center text-gray-400">
+          {location
+            ? `📍 Location captured (${location.lat.toFixed(4)}, ${location.lon.toFixed(4)})`
+            : locationError
+              ? `⚠️ ${locationError}`
+              : 'Fetching your location...'}
         </div>
 
         <button

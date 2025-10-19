@@ -11,6 +11,13 @@ const statusStyles = {
   resolved: { badge: 'bg-emerald-800 text-emerald-100', text: 'text-emerald-400' },
 };
 
+// ✅ NEW: Helper to style the Priority badge
+const getPriorityStyles = (count) => {
+  if (count >= 5) return 'bg-red-800 text-red-100';
+  if (count >= 3) return 'bg-orange-800 text-orange-100';
+  return 'bg-gray-700 text-gray-200';
+};
+
 function AdminDashboard() {
   const { t, i18n } = useTranslation();
   const { session } = useAuth();
@@ -82,6 +89,8 @@ function AdminDashboard() {
                   <th scope="col" className="px-6 py-3">S.No.</th>
                   <th scope="col" className="px-6 py-3">User</th>
                   <th scope="col" className="px-6 py-3">Issue</th>
+                  {/* ✅ NEW: Priority Column */}
+                  <th scope="col" className="px-6 py-3">Priority</th>
                   <th scope="col" className="px-6 py-3">Status</th>
                   <th scope="col" className="px-6 py-3">Timeline</th>
                   <th scope="col" className="px-6 py-3">Actions</th>
@@ -96,6 +105,14 @@ function AdminDashboard() {
                       <div className="font-medium whitespace-nowrap">{t(`reportForm.issueTypes.${report.issue_type}`)}</div>
                       <div className="text-xs text-gray-400 max-w-xs truncate" title={report.description}>{report.description}</div>
                     </td>
+
+                    {/* ✅ NEW: Priority Badge cell */}
+                    <td className="px-6 py-4">
+                      <span className={`px-3 py-1 text-xs font-bold rounded-full ${getPriorityStyles(report.duplicate_count || 1)}`}>
+                        {report.duplicate_count || 1} {report.duplicate_count > 1 ? 'Reports' : 'Report'}
+                      </span>
+                    </td>
+
                     <td className="px-6 py-4">
                       <select value={report.status} onChange={(e) => handleStatusChange(report.id, e.target.value)} className={`text-xs font-bold border-none rounded px-2 py-1 ${statusStyles[report.status]?.badge || 'bg-gray-700'}`}>
                         <option value="submitted">{t('reportsPage.statuses.submitted')}</option>
@@ -103,17 +120,19 @@ function AdminDashboard() {
                         <option value="resolved">{t('reportsPage.statuses.resolved')}</option>
                       </select>
                     </td>
+
                     <td className="px-6 py-4 text-xs whitespace-nowrap text-gray-400">
                       <ul className="space-y-1">
-                        <li><strong className="font-semibold text-gray-200">Submitted:</strong> {new Date(report.created_at).toLocaleDateString(i18n.language, { day:'numeric', month:'short' })}</li>
-                        {report.in_progress_at && <li className={statusStyles.in_progress.text}><strong className="font-semibold">In Progress:</strong> {new Date(report.in_progress_at).toLocaleDateString(i18n.language, { day:'numeric', month:'short' })}</li>}
-                        {report.resolved_at && <li className={statusStyles.resolved.text}><strong className="font-semibold">Resolved:</strong> {new Date(report.resolved_at).toLocaleDateString(i18n.language, { day:'numeric', month:'short' })}</li>}
+                        <li><strong className="font-semibold text-gray-200">Submitted:</strong> {new Date(report.created_at).toLocaleDateString(i18n.language, { day: 'numeric', month: 'short' })}</li>
+                        {report.in_progress_at && <li className={statusStyles.in_progress.text}><strong className="font-semibold">In Progress:</strong> {new Date(report.in_progress_at).toLocaleDateString(i18n.language, { day: 'numeric', month: 'short' })}</li>}
+                        {report.resolved_at && <li className={statusStyles.resolved.text}><strong className="font-semibold">Resolved:</strong> {new Date(report.resolved_at).toLocaleDateString(i18n.language, { day: 'numeric', month: 'short' })}</li>}
                       </ul>
                     </td>
+
                     <td className="px-6 py-4 space-x-4">
                       <button onClick={() => setMessagingReport(report)} className="font-medium text-cyan-400 hover:underline">Message</button>
 
-                      {/* Conditionally render media controls */}
+                      {/* Keep your existing media logic unchanged */}
                       {report.media_url && (
                         report.media_url.endsWith('.webm') ? (
                           <audio controls src={report.media_url} className="w-48 h-8 rounded-full" />
@@ -129,6 +148,7 @@ function AdminDashboard() {
           </div>
         </div>
       </motion.div>
+
       <AnimatePresence>
         {messagingReport && <SendMessageModal report={messagingReport} onClose={() => setMessagingReport(null)} />}
         {showBroadcast && <SendMessageModal broadcast={true} onClose={() => setShowBroadcast(null)} />}
