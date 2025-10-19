@@ -6,6 +6,7 @@ import ReportsPage from './pages/ReportsPage';
 import AuthPage from './pages/AuthPage';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminRoute from './components/auth/AdminRoute';
+import MyBadgesPage from './pages/MyBadgesPage'; // ✅ Added import
 
 function AppRoutes() {
   const location = useLocation();
@@ -23,6 +24,8 @@ function AppRoutes() {
             </AdminRoute>
           } 
         />
+        {/* ✅ Added new badges route */}
+        <Route path="/my-badges" element={<MyBadgesPage />} />
       </Routes>
     </AnimatePresence>
   );
@@ -32,7 +35,6 @@ function App() {
   return (
     <BrowserRouter>
       <Navbar />
-      {/* Change the class here */}
       <main className="pt-24">
         <AppRoutes />
       </main>

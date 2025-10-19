@@ -5,9 +5,12 @@ const multer = require('multer');
 const { supabase, supabaseAdmin } = require('./lib/supabaseClient');
 const elasticClient = require('./lib/elasticClient');
 const { pipeline } = require('@xenova/transformers');
+const { HfInference } = require('@huggingface/inference');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
+
+const hf = new HfInference(process.env.HUGGINGFACE_TOKEN);
 
 const upload = multer({ storage: multer.memoryStorage() });
 app.use(cors());
@@ -32,7 +35,7 @@ pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2')
 const createNotification = async (userId, reportId, content, type) => {
   const { data, error } = await supabaseAdmin
     .from('notifications')
-    .insert([{ user_id: userId, report_id: reportId, content: content, type: type }])
+    .insert([{ user_id: userId, report_id: reportId, content, type }])
     .select()
     .single();
   if (error) {
@@ -44,15 +47,60 @@ const createNotification = async (userId, reportId, content, type) => {
 };
 
 // ===============================
+// Helper: Generate and save badge for resolved report
+// ===============================
+const generateAndSaveBadge = async (report) => {
+  let badgeTitle = ''; // Initialize badgeTitle
+
+  try {
+    const prompt = `Generate a short, fun, and heroic gamification badge title for a citizen who reported an issue. The issue was "${report.issue_type}" at the location described as "${report.description}". The title should be creative, location-specific, and a maximum of 5 words. Examples: "Rasulgarh's Pothole Patriot", "Flood Fighter of Nayapalli". Do not add quotation marks. Title only.`;
+    
+    const response = await hf.textGeneration({
+      // FIX: Added the required 'mistralai/' prefix
+      model: 'mistralai/Mistral-7B-Instruct-v0.2',
+      inputs: prompt,
+      parameters: { max_new_tokens: 20, repetition_penalty: 1.2 }
+    });
+
+    const generatedText = response.generated_text || '';
+    badgeTitle = generatedText.replace(prompt, "").trim().replace(/\"/g, "");
+
+  } catch (error) {
+    console.error("Failed to generate AI badge, using fallback:", error);
+    // **FALLBACK LOGIC**
+    // If the AI fails, create a simple, generic badge title.
+    badgeTitle = `${report.issue_type.charAt(0).toUpperCase() + report.issue_type.slice(1)} Hero`;
+  }
+
+  // Ensure a badge is always created, even on failure
+  if (badgeTitle) {
+    try {
+      await supabaseAdmin.from('badges').insert({
+        user_id: report.user_id,
+        report_id: report.id,
+        title: badgeTitle,
+        description: `Awarded for resolving a "${report.issue_type}" issue.`
+      });
+      // Also send a notification to the user that they earned a badge
+      await createNotification(report.user_id, report.id, `You've earned a new badge: "${badgeTitle}"!`, 'badge_earned');
+    } catch (dbError) {
+        console.error("Failed to save badge or send notification:", dbError);
+    }
+  }
+};
+
+// ===============================
 // Routes
 // ===============================
+
+// Health check
 app.get('/', (req, res) => {
   res.status(200).json({ message: 'Welcome to the CiviQ Backend API!' });
 });
 
-// =======================================================
-// AI Duplicate Detection + Report Submission Endpoint
-// =======================================================
+// ===============================
+// AI Duplicate Detection + Report Submission
+// ===============================
 app.post('/api/reports', upload.single('file'), async (req, res) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
@@ -101,35 +149,30 @@ app.post('/api/reports', upload.single('file'), async (req, res) => {
     // === Step 3: Handle duplicate
     if (hits.total.value > 0 && hits.hits[0]._score > 0.9) {
       const duplicate = hits.hits[0]._source;
-    
-      // Read current duplicate_count (use .single() for one row)
       const { data: existingRow, error: selectError } = await supabaseAdmin
         .from('reports')
         .select('id, duplicate_count')
         .eq('id', duplicate.supabase_id)
         .single();
-    
+
       if (selectError) {
-        console.error('Failed to fetch duplicate report row before increment:', selectError);
-        // fallback: respond with message but do not crash the whole flow
+        console.error('Failed to fetch duplicate report row:', selectError);
         return res.status(200).json({
           message: 'This issue appears to be a duplicate (could not update counter).',
           data: null,
         });
       }
-    
-      // Compute new count (handle null or missing)
+
       const currentCount = (existingRow && typeof existingRow.duplicate_count === 'number') ? existingRow.duplicate_count : 1;
       const newCount = currentCount + 1;
-    
-      // Update duplicate_count atomically (simple update)
+
       const { data: updatedReport, error: updateError } = await supabaseAdmin
         .from('reports')
         .update({ duplicate_count: newCount })
         .eq('id', duplicate.supabase_id)
         .select()
         .single();
-    
+
       if (updateError) {
         console.error('Failed to update duplicate_count:', updateError);
         return res.status(200).json({
@@ -137,22 +180,18 @@ app.post('/api/reports', upload.single('file'), async (req, res) => {
           data: null,
         });
       }
-    
+
       return res.status(200).json({
         message: 'This issue has already been reported nearby. We upvoted the existing report.',
         data: updatedReport,
       });
     }
-    
 
     // === Step 4: Upload file (if any)
     const file = req.file;
     let mediaUrl = null;
     if (file) {
-      const extension =
-        file.mimetype === 'audio/webm'
-          ? 'webm'
-          : file.originalname.split('.').pop();
+      const extension = file.mimetype === 'audio/webm' ? 'webm' : file.originalname.split('.').pop();
       const fileName = `${user.id}/${Date.now()}.${extension}`;
       const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
         .from('report-media')
@@ -220,9 +259,9 @@ app.post('/api/reports', upload.single('file'), async (req, res) => {
   }
 });
 
-// =======================================================
-// Existing Admin and Notification Endpoints
-// =======================================================
+// ===============================
+// Admin PATCH route with badge generation (UPDATED)
+// ===============================
 app.patch('/api/admin/reports/:id', async (req, res) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
@@ -243,6 +282,13 @@ app.patch('/api/admin/reports/:id', async (req, res) => {
     const { status } = req.body;
     if (!status) return res.status(400).json({ message: 'New status is required.' });
 
+    const { data: currentReport, error: reportError } = await supabaseAdmin
+      .from('reports')
+      .select('*')
+      .eq('id', id)
+      .single();
+    if (reportError || !currentReport) return res.status(404).json({ message: 'Report not found.' });
+
     const updateData = { status };
     if (status === 'submitted') {
       updateData.in_progress_at = null;
@@ -251,37 +297,63 @@ app.patch('/api/admin/reports/:id', async (req, res) => {
       updateData.in_progress_at = new Date().toISOString();
       updateData.resolved_at = null;
     } else if (status === 'resolved') {
-      const { data: currentReport } = await supabaseAdmin
-        .from('reports')
-        .select('in_progress_at')
-        .eq('id', id)
-        .single();
       if (!currentReport.in_progress_at) {
         updateData.in_progress_at = new Date().toISOString();
       }
       updateData.resolved_at = new Date().toISOString();
     }
 
-    const { data, error } = await supabaseAdmin
+    // Update the report in the database first
+    const { data: updatedReport, error: updateError } = await supabaseAdmin
       .from('reports')
       .update(updateData)
       .eq('id', id)
       .select()
       .single();
-    if (error) throw error;
+    if (updateError) throw updateError;
 
-    if (data.user_id !== user.id) {
-      const notificationContent = `Your report for "${data.issue_type}" was updated to: ${status}.`;
-      await createNotification(data.user_id, data.id, notificationContent, 'status_update');
+    // Only generate badge if status changed to resolved
+    if (status === 'resolved' && currentReport.status !== 'resolved') {
+      generateAndSaveBadge(updatedReport);
     }
 
-    res.status(200).json({ message: 'Report status updated successfully', data });
+    // Send notification if report belongs to another user
+    if (updatedReport.user_id !== user.id) {
+      const notificationContent = `Your report for "${updatedReport.issue_type}" was updated to: ${status}.`;
+      await createNotification(updatedReport.user_id, updatedReport.id, notificationContent, 'status_update');
+    }
+
+    res.status(200).json({ message: 'Report status updated successfully', data: updatedReport });
   } catch (error) {
     console.error('Error updating report status:', error.message);
     res.status(500).json({ message: 'Failed to update report status.', error: error.message });
   }
 });
 
+
+// ===============================
+// Fetch badges for user
+// ===============================
+app.get('/api/badges/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { data, error } = await supabaseAdmin
+      .from('badges')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    res.status(200).json(data);
+  } catch (error) {
+    console.error('Error fetching badges:', error);
+    res.status(500).json({ message: 'Failed to fetch badges' });
+  }
+});
+
+// ===============================
+// Admin messages and broadcast
+// ===============================
 app.post('/api/admin/messages', async (req, res) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
@@ -350,6 +422,9 @@ app.post('/api/admin/broadcast', async (req, res) => {
   }
 });
 
+// ===============================
+// Notifications
+// ===============================
 app.post('/api/notifications/mark-read', async (req, res) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
@@ -364,6 +439,7 @@ app.post('/api/notifications/mark-read', async (req, res) => {
       .eq('user_id', user.id)
       .eq('is_read', false);
 
+    // FIX: The string message is now on a single line.
     res.status(200).json({ message: 'Notifications marked as read.' });
   } catch (error) {
     console.error('Error marking notifications as read:', error.message);
@@ -433,6 +509,9 @@ app.get('/api/notifications', async (req, res) => {
   }
 });
 
+// ===============================
+// Admin: Fetch all reports
+// ===============================
 app.get('/api/admin/reports', async (req, res) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
@@ -446,9 +525,7 @@ app.get('/api/admin/reports', async (req, res) => {
       .select('role')
       .eq('id', user.id)
       .single();
-    if (profileError || profile.role !== 'admin') {
-      return res.status(403).json({ message: 'Admin access required.' });
-    }
+    if (profileError || profile.role !== 'admin') return res.status(403).json({ message: 'Admin access required.' });
 
     const { data: reports, error: reportsError } = await supabaseAdmin
       .from('reports')
@@ -457,25 +534,22 @@ app.get('/api/admin/reports', async (req, res) => {
     if (reportsError) throw reportsError;
 
     const userIds = [...new Set(reports.map(r => r.user_id).filter(id => id !== null))];
+    let combinedData;
     if (userIds.length === 0) {
-      const combinedData = reports.map(report => ({
+      combinedData = reports.map(report => ({ ...report, profiles: { email: 'N/A' } }));
+    } else {
+      const { data: profiles, error: profilesError } = await supabaseAdmin
+        .from('profiles')
+        .select('id, email')
+        .in('id', userIds);
+      if (profilesError) throw profilesError;
+
+      const profileMap = new Map(profiles.map(p => [p.id, p]));
+      combinedData = reports.map(report => ({
         ...report,
-        profiles: { email: 'N/A' },
+        profiles: { email: profileMap.get(report.user_id)?.email || 'N/A' },
       }));
-      return res.status(200).json(combinedData);
     }
-
-    const { data: profiles, error: profilesError } = await supabaseAdmin
-      .from('profiles')
-      .select('id, email')
-      .in('id', userIds);
-    if (profilesError) throw profilesError;
-
-    const profileMap = new Map(profiles.map(p => [p.id, p]));
-    const combinedData = reports.map(report => ({
-      ...report,
-      profiles: { email: profileMap.get(report.user_id)?.email || 'N/A' },
-    }));
 
     res.status(200).json(combinedData);
   } catch (error) {
@@ -484,6 +558,9 @@ app.get('/api/admin/reports', async (req, res) => {
   }
 });
 
+// ===============================
+// Fetch user reports
+// ===============================
 app.get('/api/reports', async (req, res) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
@@ -505,6 +582,9 @@ app.get('/api/reports', async (req, res) => {
   }
 });
 
+// ===============================
+// Start server
+// ===============================
 app.listen(PORT, () => {
   console.log(`🚀 Server is running on http://localhost:${PORT}`);
 });
