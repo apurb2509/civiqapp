@@ -112,7 +112,15 @@ function AdminDashboard() {
                     </td>
                     <td className="px-6 py-4 space-x-4">
                       <button onClick={() => setMessagingReport(report)} className="font-medium text-cyan-400 hover:underline">Message</button>
-                      {report.media_url && <button onClick={() => setViewingMedia(report.media_url)} className="font-medium text-purple-400 hover:underline">View Media</button>}
+
+                      {/* Conditionally render media controls */}
+                      {report.media_url && (
+                        report.media_url.endsWith('.webm') ? (
+                          <audio controls src={report.media_url} className="w-48 h-8 rounded-full" />
+                        ) : (
+                          <button onClick={() => setViewingMedia(report.media_url)} className="font-medium text-purple-400 hover:underline">View Media</button>
+                        )
+                      )}
                     </td>
                   </motion.tr>
                 ))}

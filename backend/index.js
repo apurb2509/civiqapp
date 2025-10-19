@@ -33,7 +33,9 @@ app.post('/api/reports', upload.single('file'), async (req, res) => {
     const file = req.file;
     let mediaUrl = null;
     if (file) {
-      const fileName = `${user.id}/${Date.now()}_${file.originalname}`;
+      // Determine file extension based on MIME type for better compatibility
+  const extension = file.mimetype === 'audio/webm' ? 'webm' : file.originalname.split('.').pop();
+  const fileName = `${user.id}/${Date.now()}.${extension}`;
       const { data: uploadData, error: uploadError } = await supabaseAdmin.storage.from('report-media').upload(fileName, file.buffer, { contentType: file.mimetype });
       if (uploadError) throw uploadError;
       const { data: urlData } = supabaseAdmin.storage.from('report-media').getPublicUrl(uploadData.path);
