@@ -46,9 +46,12 @@ function ReportsPage() {
     const fetchReports = async () => {
       try {
         if (!session) { setReports([]); return; }
-        const response = await fetch('http://localhost:8080/api/reports', {
-          headers: { 'Authorization': `Bearer ${session.access_token}` }
-        });
+        const response = await fetch(`http://localhost:8080/api/reports?nocache=${Date.now()}`, {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Cache-Control': 'no-cache',
+          },
+        });     
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         setReports(data);

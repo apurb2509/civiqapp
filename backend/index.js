@@ -78,27 +78,32 @@ const generateAndSaveBadge = async (report) => {
 // ===============================
 app.get('/', (req, res) => { res.status(200).json({ message: 'Welcome to the CiviQ Backend API!' }); });
 
-// ===============================
-// AI Duplicate Detection + Report Submission (FIXED)
-// ===============================
 app.post('/api/reports', upload.single('file'), async (req, res) => {
+  console.log('--- POST /api/reports called ---');
   try {
     const token = req.headers.authorization?.split(' ')[1];
-    if (!token) return res.status(401).json({ message: 'Authentication token is required.' });
-
-    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
-    if (userError || !user) return res.status(401).json({ message: 'Invalid or expired token.' });
-
-    // *** THIS IS THE FIX ***
-    // Only issueType and description are required. lat and lon are now optional.
-    const { issueType, description, lat, lon } = req.body;
-    if (!issueType || !description) {
-      return res.status(400).json({ message: 'Issue Type and description are required.' });
+    if (!token) {
+      console.log('No auth token provided.');
+      return res.status(401).json({ message: 'Authentication token is required.' });
     }
 
-    // *** THIS IS THE FIX ***
-    // Only attempt duplicate detection if location data is provided and the AI model is ready.
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    if (userError || !user) {
+      console.log('Invalid or expired token.', userError);
+      return res.status(401).json({ message: 'Invalid or expired token.' });
+    }
+    console.log('Authenticated user:', user.id);
+
+    const { issueType, description, lat, lon } = req.body;
+    if (!issueType || !description) {
+      console.log('Missing required fields:', { issueType, description });
+      return res.status(400).json({ message: 'Issue Type and description are required.' });
+    }
+    console.log('Report details received:', { issueType, description, lat, lon });
+
+    // Duplicate detection
     if (lat && lon && extractor) {
+      console.log('Running duplicate detection...');
       const embedding = await extractor(description, { pooling: 'mean', normalize: true });
       const vector = Array.from(embedding.data);
 
@@ -108,32 +113,39 @@ app.post('/api/reports', upload.single('file'), async (req, res) => {
         query: { bool: { must: [{ term: { issue_type: issueType } }], filter: [{ geo_distance: { distance: '50m', location: { lat: parseFloat(lat), lon: parseFloat(lon) } } }] } },
       });
 
+      console.log('Duplicate search results:', hits);
+
       if (hits.total.value > 0 && hits.hits[0]._score > 0.9) {
         const duplicate = hits.hits[0]._source;
+        console.log('Duplicate found:', duplicate);
         const { data: existingRow } = await supabaseAdmin.from('reports').select('duplicate_count').eq('id', duplicate.supabase_id).single();
         const newCount = (existingRow?.duplicate_count || 1) + 1;
         const { data: updatedReport } = await supabaseAdmin.from('reports').update({ duplicate_count: newCount }).eq('id', duplicate.supabase_id).select().single();
+        console.log('Updated duplicate count:', updatedReport);
         return res.status(200).json({ message: 'This issue has already been reported nearby. We upvoted the existing report.', data: updatedReport });
       }
     }
 
-    // If no duplicate is found (or no location was provided), create a new report.
-    const file = req.file;
+    // Handle file upload
     let mediaUrl = null;
-    if (file) {
-      const extension = file.mimetype.startsWith('audio/') ? 'webm' : file.originalname.split('.').pop();
+    if (req.file) {
+      console.log('Processing file upload...');
+      const extension = req.file.mimetype.startsWith('audio/') ? 'webm' : req.file.originalname.split('.').pop();
       const fileName = `${user.id}/${Date.now()}.${extension}`;
-      const { data: uploadData, error: uploadError } = await supabaseAdmin.storage.from('report-media').upload(fileName, file.buffer, { contentType: file.mimetype });
+      const { data: uploadData, error: uploadError } = await supabaseAdmin.storage.from('report-media').upload(fileName, req.file.buffer, { contentType: req.file.mimetype });
       if (uploadError) throw uploadError;
       const { data: urlData } = supabaseAdmin.storage.from('report-media').getPublicUrl(uploadData.path);
       mediaUrl = urlData.publicUrl;
+      console.log('File uploaded, URL:', mediaUrl);
     }
 
+    // Insert report
+    console.log('Inserting report into Supabase...');
     const { data: reportData, error: insertError } = await supabaseAdmin
       .from('reports')
       .insert([{ 
         issue_type: issueType, 
-        description: description, 
+        description, 
         media_url: mediaUrl, 
         user_id: user.id, 
         lat: lat ? parseFloat(lat) : null, 
@@ -141,8 +153,11 @@ app.post('/api/reports', upload.single('file'), async (req, res) => {
       }])
       .select().single();
     if (insertError) throw insertError;
+    console.log('Report inserted:', reportData);
 
+    // Index in Elastic if location provided
     if (lat && lon && extractor) {
+      console.log('Indexing report in Elastic...');
       const embeddingForIndex = await extractor(description, { pooling: 'mean', normalize: true });
       const vectorForIndex = Array.from(embeddingForIndex.data);
       await elasticClient.index({
@@ -156,21 +171,27 @@ app.post('/api/reports', upload.single('file'), async (req, res) => {
           issue_type: issueType,
         },
       });
+      console.log('Report indexed in Elastic.');
     }
 
+    // Notify admins
+    console.log('Sending notifications to admins...');
     const { data: admins, error: adminError } = await supabaseAdmin.from('profiles').select('id').eq('role', 'admin');
     if (!adminError && admins) {
       for (const admin of admins) {
         await createNotification(admin.id, reportData.id, `New report submitted: ${issueType}.`, 'new_report');
+        console.log('Notification sent to admin:', admin.id);
       }
     }
 
+    console.log('--- Report submission complete ---');
     res.status(201).json({ message: 'Report submitted successfully!', data: reportData });
   } catch (error) {
     console.error('--- DETAILED ERROR ---', error);
     res.status(500).json({ message: `Backend Error: ${error.message}` });
   }
 });
+
 
 app.patch('/api/admin/reports/:id', async (req, res) => {
   try {
