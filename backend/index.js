@@ -42,16 +42,28 @@ const createNotification = async (userId, reportId, content, type) => {
 const generateAndSaveBadge = async (report) => {
   let badgeTitle = '';
   try {
-    const prompt = `Generate a short, fun, and heroic gamification badge title for a citizen who reported an issue. The issue was "${report.issue_type}" at the location described as "${report.description}". The title should be creative, location-specific, and a maximum of 5 words. Examples: "Rasulgarh's Pothole Patriot", "Flood Fighter of Nayapalli". Do not add quotation marks. Title only.`;
+    const prompt = `Generate a short, fun, and heroic gamification badge title for a citizen who reported an issue. The issue was "${report.issue_type}" at the location described as "${report.description}". The title should be creative, location-specific, and a maximum of 3 words. Examples: "Rasulgarh's Pothole Patriot", "Flood Fighter of Nayapalli". Do not add quotation marks. Title only.`;
     
-    const response = await hf.textGeneration({
-      model: 'mistralai/Mistral-7B-Instruct-v0.2',
-      inputs: prompt,
-      parameters: { max_new_tokens: 20, repetition_penalty: 1.2 }
-    });
+    console.log("📨 Sending prompt to Hugging Face...");
 
-    const generatedText = response.generated_text || '';
-    badgeTitle = generatedText.replace(prompt, "").trim().replace(/\"/g, "");
+    const response = await hf.chatCompletion({
+      model: process.env.HF_MODEL,
+      messages: [
+        { role: "system", content: "You are a creative civic badge generator." },
+        { role: "user", content: prompt }
+      ],
+      max_new_tokens: 60,
+      temperature: 0.7,
+    });    
+
+    const generatedText = response.choices?.[0]?.message?.content || '';
+    badgeTitle = generatedText.trim().replace(/\"/g, "");    
+
+        // Handle case if model returns empty or prompt echo
+        if (!badgeTitle || badgeTitle.length < 3) {
+          console.warn("⚠️ Badge text too short or empty, using fallback.");
+          badgeTitle = `${report.issue_type.charAt(0).toUpperCase() + report.issue_type.slice(1)} Hero`;
+        }
 
   } catch (error) {
     console.error("Failed to generate AI badge, using fallback:", error);

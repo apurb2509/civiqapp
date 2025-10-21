@@ -84,7 +84,24 @@ function ReportForm() {
     }
   };
 
-  const issueTypes = ['pothole', 'treeCutting', 'waterClogging', 'debris', 'unsafeStreet'];
+  const issueTypes = [
+    'pothole',           // Original 1
+    'treeCutting',       // Original 2
+    'waterClogging',     // Original 3
+    'debris',            // Original 4
+    'unsafeStreet',      // Original 5
+    'strayAnimals',
+    'illegalParking',
+    'garbageBurning',
+    'damagedProperty',
+    'noisePollution',
+    'brokenStreetlight', // <-- New
+    'sewageOverflow',    // <-- New
+    'leakingPipe',       // <-- New
+    'mosquitoMenace',    // <-- New
+    'publicToiletIssue', // <-- New
+    'other'
+  ];
   const isDisabled = !session || isSubmitting;
 
   // 🎢 3D tilt effect
