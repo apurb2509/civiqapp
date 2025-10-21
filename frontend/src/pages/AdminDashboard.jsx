@@ -32,8 +32,11 @@ function AdminDashboard() {
     const fetchAdminReports = async () => {
       if (!session) { setLoading(false); return; }
       try {
-        const response = await fetch('http://localhost:8080/api/admin/reports', {
-          headers: { 'Authorization': `Bearer ${session.access_token}` },
+        const response = await fetch(`http://localhost:8080/api/admin/reports?nocache=${Date.now()}`, {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Cache-Control': 'no-cache',
+          },
         });
         if (!response.ok) {
           const errorData = await response.json();
@@ -89,6 +92,7 @@ function AdminDashboard() {
                   <th scope="col" className="px-6 py-3">S.No.</th>
                   <th scope="col" className="px-6 py-3">User</th>
                   <th scope="col" className="px-6 py-3">Issue</th>
+                  
                   {/* ✅ NEW: Priority Column */}
                   <th scope="col" className="px-6 py-3">Priority</th>
                   <th scope="col" className="px-6 py-3">Status</th>
