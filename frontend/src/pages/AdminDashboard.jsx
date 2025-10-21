@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import SendMessageModal from '../components/SendMessageModal';
 import MediaViewerModal from '../components/MediaViewerModal';
+import SmartReplyModal from '../components/SmartReplyModal'; // ✅ IMPORTED NEW MODAL
 
 const statusStyles = {
   submitted: { badge: 'bg-amber-800 text-amber-100', text: 'text-amber-400' },
@@ -11,7 +12,7 @@ const statusStyles = {
   resolved: { badge: 'bg-emerald-800 text-emerald-100', text: 'text-emerald-400' },
 };
 
-// ✅ NEW: Helper to style the Priority badge
+// Helper to style the Priority badge
 const getPriorityStyles = (count) => {
   if (count >= 5) return 'bg-red-800 text-red-100';
   if (count >= 3) return 'bg-orange-800 text-orange-100';
@@ -27,6 +28,7 @@ function AdminDashboard() {
   const [messagingReport, setMessagingReport] = useState(null);
   const [showBroadcast, setShowBroadcast] = useState(false);
   const [viewingMedia, setViewingMedia] = useState(null);
+  const [replyingReport, setReplyingReport] = useState(null); // ✅ NEW STATE FOR SMART REPLY MODAL
 
   useEffect(() => {
     const fetchAdminReports = async () => {
@@ -71,6 +73,14 @@ function AdminDashboard() {
     }
   };
 
+  // ✅ NEW: Function to handle selecting a smart reply
+  const handleSelectSmartReply = (replyText) => {
+    // 1. Close the SmartReplyModal (setReplyingReport(null))
+    // 2. Open the SendMessageModal with the prefilled text
+    setMessagingReport({ ...replyingReport, prefilledText: replyText });
+    setReplyingReport(null);
+  };
+
   const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.05 } } };
   const itemVariants = { hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1 } };
 
@@ -93,7 +103,7 @@ function AdminDashboard() {
                   <th scope="col" className="px-6 py-3">User</th>
                   <th scope="col" className="px-6 py-3">Issue</th>
                   
-                  {/* ✅ NEW: Priority Column */}
+                  {/* Priority Column */}
                   <th scope="col" className="px-6 py-3">Priority</th>
                   <th scope="col" className="px-6 py-3">Status</th>
                   <th scope="col" className="px-6 py-3">Timeline</th>
@@ -110,7 +120,7 @@ function AdminDashboard() {
                       <div className="text-xs text-gray-400 max-w-xs truncate" title={report.description}>{report.description}</div>
                     </td>
 
-                    {/* ✅ NEW: Priority Badge cell */}
+                    {/* Priority Badge cell */}
                     <td className="px-6 py-4">
                       <span className={`px-3 py-1 text-xs font-bold rounded-full ${getPriorityStyles(report.duplicate_count || 1)}`}>
                         {report.duplicate_count || 1} {report.duplicate_count > 1 ? 'Reports' : 'Report'}
@@ -133,17 +143,27 @@ function AdminDashboard() {
                       </ul>
                     </td>
 
-                    <td className="px-6 py-4 space-x-4">
-                      <button onClick={() => setMessagingReport(report)} className="font-medium text-cyan-400 hover:underline">Message</button>
+                    <td className="px-6 py-4">
+                    <div className="flex flex-col items-start space-y-2">
+                      {/* ✅ NEW: Smart Reply Button */}
+                      <button 
+                        onClick={() => setReplyingReport(report)} 
+                        className="font-medium text-green-400 hover:underline whitespace-nowrap"
+                      >
+                        Smart Reply
+                      </button>
+                      
+                      <button onClick={() => setMessagingReport(report)} className="font-medium text-cyan-400 hover:underline whitespace-nowrap">Message</button>
 
                       {/* Keep your existing media logic unchanged */}
                       {report.media_url && (
                         report.media_url.endsWith('.webm') ? (
                           <audio controls src={report.media_url} className="w-48 h-8 rounded-full" />
                         ) : (
-                          <button onClick={() => setViewingMedia(report.media_url)} className="font-medium text-purple-400 hover:underline">View Media</button>
+                          <button onClick={() => setViewingMedia(report.media_url)} className="font-medium text-purple-400 hover:underline whitespace-nowrap">View Media</button>
                         )
                       )}
+                    </div>
                     </td>
                   </motion.tr>
                 ))}
@@ -154,9 +174,29 @@ function AdminDashboard() {
       </motion.div>
 
       <AnimatePresence>
-        {messagingReport && <SendMessageModal report={messagingReport} onClose={() => setMessagingReport(null)} />}
+        {/* ✅ UPDATED: Pass prefilledText from smart reply to SendMessageModal */}
+        {messagingReport && 
+          <SendMessageModal 
+            report={messagingReport} 
+            initialMessage={messagingReport.prefilledText} // Pass prefilledText
+            onClose={() => {
+              setMessagingReport(null);
+              // Clear prefilled text in case the user closes the modal without sending
+              setReports(prev => prev.map(r => r.id === messagingReport.id ? { ...r, prefilledText: undefined } : r));
+            }} 
+          />}
+        
         {showBroadcast && <SendMessageModal broadcast={true} onClose={() => setShowBroadcast(null)} />}
+        
         {viewingMedia && <MediaViewerModal mediaUrl={viewingMedia} onClose={() => setViewingMedia(null)} />}
+        
+        {/* ✅ NEW: Show the SmartReplyModal */}
+        {replyingReport && 
+          <SmartReplyModal 
+            report={replyingReport} 
+            onSelectReply={handleSelectSmartReply} 
+            onClose={() => setReplyingReport(null)} 
+          />}
       </AnimatePresence>
     </>
   );

@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
 
-function SendMessageModal({ report, onClose, broadcast = false }) {
+function SendMessageModal({ report, onClose, broadcast = false, initialMessage = '' }) {
   const { session } = useAuth();
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState(initialMessage);
   const [isSending, setIsSending] = useState(false);
 
   const handleSendMessage = async (e) => {

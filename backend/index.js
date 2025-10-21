@@ -6,11 +6,13 @@ const { supabase, supabaseAdmin } = require('./lib/supabaseClient');
 const elasticClient = require('./lib/elasticClient');
 const { pipeline } = require('@xenova/transformers');
 const { HfInference } = require('@huggingface/inference');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
 
 const hf = new HfInference(process.env.HUGGINGFACE_TOKEN);
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 const upload = multer({ storage: multer.memoryStorage() });
 app.use(cors());
@@ -330,6 +332,41 @@ app.post('/api/notifications/mark-read', async (req, res) => {
   } catch (error) {
     console.error('Error marking notifications as read:', error.message);
     res.status(500).json({ message: 'Failed to mark notifications as read.' });
+  }
+});
+
+// ===============================
+// ✅ NEW: Generative Smart Replies Route
+// ===============================
+app.post('/api/admin/generate-reply', async (req, res) => {
+  try {
+    const { issue_type, description } = req.body;
+    if (!issue_type || !description) {
+      return res.status(400).json({ message: 'Issue type and description are required.' });
+    }
+
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash"});
+    const prompt = `You are a helpful assistant for a civic issues reporting platform. A citizen has reported an issue. Based on the following details, generate 3 short, distinct, pre-written replies for an admin to send to the citizen. The replies should be empathetic and informative. Each reply must be on a new line and start with a hyphen '-'.
+    
+    Issue Type: "${issue_type}"
+    Description: "${description}"
+
+    Example Replies for a Pothole:
+    - Thank you for your report. A maintenance team has been assigned and will inspect the location within 48 hours.
+    - We have received your report about the pothole. This issue has been added to our queue for road repairs.
+    - Thank you for helping us identify this. We will provide an update as soon as our team assesses the situation.`;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    
+    const replies = text.split('\n').filter(line => line.startsWith('-')).map(line => line.substring(1).trim());
+
+    res.status(200).json({ replies });
+
+  } catch (error) {
+    console.error("Failed to generate smart replies:", error);
+    res.status(500).json({ message: "Failed to generate smart replies." });
   }
 });
 
