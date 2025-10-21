@@ -48,13 +48,15 @@ const generateAndSaveBadge = async (report) => {
 
     const response = await hf.chatCompletion({
       model: process.env.HF_MODEL,
+      provider: process.env.HF_PROVIDER,
       messages: [
-        { role: "system", content: "You are a creative civic badge generator." },
+        // 👇 MODIFY THIS LINE
+        { role: "system", content: "Reasoning: low. You are a creative civic badge generator." },
         { role: "user", content: prompt }
       ],
       max_new_tokens: 60,
       temperature: 0.7,
-    });    
+    }); 
 
     const generatedText = response.choices?.[0]?.message?.content || '';
     badgeTitle = generatedText.trim().replace(/\"/g, "");    
