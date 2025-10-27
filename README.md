@@ -47,7 +47,7 @@ To build a transparent, AI-powered civic communication system that empowers citi
 
 ---
 
-## ⚙️ Environment Setup
+## ⚙️ Environment Setup & Server Start
 
 Create a `.env` file in your **backend** directory:
 
@@ -58,9 +58,7 @@ SUPABASE_JWT_SECRET=your_jwt_secret
 TWILIO_ACCOUNT_SID=your_twilio_account_sid
 TWILIO_AUTH_TOKEN=your_twilio_auth_token
 TWILIO_VERIFY_SERVICE_SID=your_twilio_verify_sid
-
----
-
+ 
 # Start Backend
 cd backend
 npm install
@@ -73,3 +71,4 @@ npm run dev
 
 # Visit the app
 http://localhost:5173
+
