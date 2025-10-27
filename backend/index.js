@@ -7,12 +7,15 @@ const elasticClient = require('./lib/elasticClient');
 const { pipeline } = require('@xenova/transformers');
 const { HfInference } = require('@huggingface/inference');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const twilio = require('twilio');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
 
 const hf = new HfInference(process.env.HUGGINGFACE_TOKEN);
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
 const upload = multer({ storage: multer.memoryStorage() });
 app.use(cors());
@@ -450,6 +453,120 @@ app.get('/api/reports', async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch reports.' });
   }
 });
+
+// ===============================
+// TWILIO: Send OTP
+// ===============================
+app.post('/api/auth/send-otp', async (req, res) => {
+  const { phone } = req.body;
+  if (!phone) {
+    return res.status(400).json({ message: 'Phone number is required.' });
+  }
+
+  try {
+    const verification = await twilioClient.verify.v2.services(process.env.TWILIO_VERIFY_SERVICE_SID)
+      .verifications
+      .create({ to: phone, channel: 'sms' });
+
+    res.status(200).json({ message: 'OTP sent successfully.', status: verification.status });
+  } catch (error) {
+    console.error('Error sending OTP:', error.message);
+    res.status(500).json({ message: 'Failed to send OTP.', error: error.message });
+  }
+});
+
+// ===================================================
+// Helper: Normalize phone number
+// ===================================================
+function normalizePhone(phone) {
+  if (!phone) return null;
+  let formatted = phone.trim().replace(/\s+/g, '');
+  if (!formatted.startsWith('+')) formatted = '+' + formatted;
+  return formatted;
+}
+
+// ===================================================
+// TWILIO: Verify OTP & Supabase Login/Signup
+// ===================================================
+app.post('/api/auth/verify-otp', async (req, res) => {
+  let { phone, code } = req.body;
+  if (!phone || !code) {
+    return res.status(400).json({ message: 'Phone number and OTP code are required.' });
+  }
+
+  const normalizedPhone = normalizePhone(phone);
+
+  try {
+    // 1️⃣ Verify OTP via Twilio
+    const verificationCheck = await twilioClient.verify.v2
+      .services(process.env.TWILIO_VERIFY_SERVICE_SID)
+      .verificationChecks.create({ to: normalizedPhone, code });
+
+    console.log('Twilio verification result:', verificationCheck.status);
+    if (verificationCheck.status !== 'approved') {
+      return res.status(400).json({ message: 'Invalid or expired OTP.' });
+    }
+
+    // 2️⃣ Check if profile exists
+    const { data: profile, error: profileError } = await supabaseAdmin
+    .from('profiles')
+    .select('*')
+    .eq('phone', normalizedPhone)
+    .maybeSingle();
+  
+  if (profileError) throw profileError;
+  
+
+    if (!profile) {
+      // 3️⃣ Create new Supabase user via admin API
+      const { data: newUserData, error: createError } = await supabaseAdmin.auth.admin.createUser({
+        phone: normalizedPhone,
+        phone_confirm: true,
+      });
+      if (createError) throw createError;
+      userId = newUserData.user.id;
+
+      // Ensure profile row exists
+      await supabaseAdmin.from('profiles').insert({ id: userId, phone: normalizedPhone });
+    } else {
+      userId = profile.id;
+    }
+
+    // 4️⃣ Create JWT manually
+    const token = jwt.sign(
+      {
+        sub: userId,
+        aud: 'authenticated',
+        role: 'authenticated',
+        phone: normalizedPhone,
+      },
+      process.env.SUPABASE_JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+// 5️⃣ Send response
+    res.status(200).json({
+        message: 'Login successful!',
+        // Wrap in a 'session' object to match the frontend's expectation
+        session: { 
+          access_token: token,
+          expires_in: 604800, // 7 days
+          // Fix: Use 'userId' variable instead of the undefined 'user'
+          user: { id: userId, phone: normalizedPhone } 
+        }
+      }); 
+
+  } catch (error) {
+    console.error('Error verifying OTP:', error);
+    res.status(500).json({
+      message: 'Failed to verify OTP.',
+      error: error.message,
+    });
+  }
+});
+
+console.log("Using Twilio Service SID:", process.env.TWILIO_VERIFY_SERVICE_SID);
+
 
 app.listen(PORT, () => {
   console.log(`🚀 Server is running on http://localhost:${PORT}`);
