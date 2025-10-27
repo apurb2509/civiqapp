@@ -24,7 +24,7 @@ To build a transparent, AI-powered civic communication system that empowers citi
 ### 🛠️ Admin Side
 - **Secure Admin Dashboard** with all user reports
 - **Status Management**: Submitted → In Progress → Resolved
-- **AI Smart Replies** (powered by Gemini 1.5 Flash)
+- **AI Smart Replies** (powered by Gemini 2.5 Flash)
 - **Direct Messaging** to individual users
 - **Broadcast Messages** to all users
 - **In-Page Media Viewer** (view photos, play audio directly)
@@ -40,7 +40,7 @@ To build a transparent, AI-powered civic communication system that empowers citi
 | **Backend** | Node.js / Express | REST API and server logic |
 | **Database & Auth** | Supabase (Postgres + Auth) | Secure storage & authentication |
 | **OTP** | Twilio Verify API | SMS-based OTP login |
-| **AI** | Gemini 1.5 Flash (Google AI), Hugging Face | Smart replies & badge generation |
+| **AI** | Gemini 2.5 Flash (Google AI), Hugging Face | Smart replies & badge generation |
 | **Search** | Elasticsearch | Duplicate and priority detection |
 | **Realtime** | Supabase Broadcast | Live notifications and updates |
 | **Hosting** | Vercel (Frontend), Render (Backend) | Deployment and scaling |
@@ -58,3 +58,18 @@ SUPABASE_JWT_SECRET=your_jwt_secret
 TWILIO_ACCOUNT_SID=your_twilio_account_sid
 TWILIO_AUTH_TOKEN=your_twilio_auth_token
 TWILIO_VERIFY_SERVICE_SID=your_twilio_verify_sid
+
+---
+
+# Start Backend
+cd backend
+npm install
+npm run dev
+
+# Start Frontend
+cd frontend
+npm install
+npm run dev
+
+# Visit the app
+http://localhost:5173
