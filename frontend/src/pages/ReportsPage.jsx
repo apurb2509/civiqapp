@@ -129,12 +129,12 @@ function ReportsPage() {
       initial="hidden"
       animate="visible"
       exit={{ opacity: 0 }}
-      className="bg-gray-900 min-h-screen text-white p-4 sm:p-8"
+      className="bg-gray-900 min-h-screen text-white px-4 py-8 sm:px-6 lg:px-8"
     >
       <div className="container mx-auto">
         <motion.h1
           variants={itemVariants}
-          className="text-3xl sm:text-4xl font-bold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 drop-shadow-[0_0_20px_rgba(56,189,248,0.3)]"
+          className="text-2xl sm:text-3xl md:text-4xl font-bold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 drop-shadow-[0_0_20px_rgba(56,189,248,0.3)]"
         >
           {t("reportsPage.title")}
         </motion.h1>
@@ -157,7 +157,7 @@ function ReportsPage() {
         ) : (
           <motion.div
             variants={containerVariants}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8"
           >
             {reports.map((report) => {
               const currentStatus =
@@ -174,7 +174,7 @@ function ReportsPage() {
                       href={report.media_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="block h-48 overflow-hidden rounded-t-2xl"
+                      className="block h-40 sm:h-48 overflow-hidden rounded-t-2xl"
                     >
                       <img
                         src={report.media_url}
@@ -185,7 +185,7 @@ function ReportsPage() {
                   )}
 
                   {/* Content */}
-                  <div className="p-6 flex flex-col flex-grow">
+                  <div className="p-4 sm:p-6 flex flex-col flex-grow">
                     <div className="flex justify-between items-start mb-3">
                       <span className="font-bold text-white uppercase tracking-wider text-sm sm:text-base">
                         {t(`reportForm.issueTypes.${report.issue_type}`)}

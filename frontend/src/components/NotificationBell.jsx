@@ -108,20 +108,20 @@ function NotificationBell() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
               transition={{ duration: 0.15 }}
-              className="absolute top-full right-0 mt-3 w-80 sm:w-96 bg-slate-800 border border-slate-700/50 rounded-xl shadow-2xl overflow-hidden backdrop-blur-sm"
+              className="absolute top-full right-0 mt-3 w-[calc(100vw-2rem)] sm:w-80 md:w-96 max-w-96 bg-slate-800 border border-slate-700/50 rounded-xl shadow-2xl overflow-hidden backdrop-blur-sm"
             >
               {/* Header */}
-              <div className="px-4 py-3.5 bg-gradient-to-r from-slate-800 to-slate-800/80 border-b border-slate-700/50 flex items-center justify-between">
+              <div className="px-3 sm:px-4 py-3 sm:py-3.5 bg-gradient-to-r from-slate-800 to-slate-800/80 border-b border-slate-700/50 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-cyan-600/20 border border-cyan-600/30">
                     <svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                     </svg>
                   </div>
-                  <h3 className="font-bold text-white text-base">Notifications</h3>
+                  <h3 className="font-bold text-white text-sm sm:text-base">Notifications</h3>
                 </div>
                 {notifications.length > 0 && (
-                  <span className="text-xs text-gray-400 bg-slate-700/50 px-2 py-1 rounded-full">
+                  <span className="text-[10px] sm:text-xs text-gray-400 bg-slate-700/50 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full">
                     {notifications.length} total
                   </span>
                 )}
@@ -130,19 +130,19 @@ function NotificationBell() {
               {/* Notifications List */}
               <div className="max-h-96 overflow-y-auto custom-scrollbar">
                 {loading ? (
-                  <div className="flex flex-col items-center justify-center p-8">
+                  <div className="flex flex-col items-center justify-center p-6 sm:p-8">
                     <div className="w-10 h-10 border-3 border-cyan-600 border-t-transparent rounded-full animate-spin mb-3"></div>
-                    <p className="text-gray-400 text-sm">Loading notifications...</p>
+                    <p className="text-gray-400 text-xs sm:text-sm">Loading notifications...</p>
                   </div>
                 ) : notifications.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center p-12">
+                  <div className="flex flex-col items-center justify-center p-8 sm:p-12">
                     <div className="w-16 h-16 flex items-center justify-center rounded-full bg-slate-700/30 mb-4">
                       <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                       </svg>
                     </div>
-                    <p className="text-gray-400 text-sm font-medium">No new notifications</p>
-                    <p className="text-gray-500 text-xs mt-1">You're all caught up!</p>
+                    <p className="text-gray-400 text-xs sm:text-sm font-medium">No new notifications</p>
+<p className="text-gray-500 text-[10px] sm:text-xs mt-1">You're all caught up!</p>
                   </div>
                 ) : (
                   <div className="divide-y divide-slate-700/30">
@@ -153,13 +153,13 @@ function NotificationBell() {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.05 }}
                         onClick={() => setSelectedNotif(notif)}
-                        className={`p-4 hover:bg-slate-700/40 cursor-pointer transition-all duration-200 group ${
+                        className={`p-3 sm:p-4 hover:bg-slate-700/40 cursor-pointer transition-all duration-200 group ${
                           !notif.is_read ? 'bg-cyan-900/20 border-l-2 border-l-cyan-500' : ''
                         }`}
                       >
                         <div className="flex items-start gap-3">
                           {/* Icon */}
-                          <div className={`flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg ${
+                          <div className={`flex-shrink-0 w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg ${
                             !notif.is_read 
                               ? 'bg-cyan-600/20 border border-cyan-600/30' 
                               : 'bg-slate-700/50 border border-slate-600/30'
@@ -176,7 +176,7 @@ function NotificationBell() {
 
                           {/* Content */}
                           <div className="flex-1 min-w-0">
-                            <p className="text-white text-sm leading-relaxed line-clamp-2 group-hover:text-cyan-400 transition-colors">
+                            <p className="text-white text-xs sm:text-sm leading-relaxed line-clamp-2 group-hover:text-cyan-400 transition-colors">
                               {notif.content}
                             </p>
                             <div className="flex items-center gap-2 mt-2">

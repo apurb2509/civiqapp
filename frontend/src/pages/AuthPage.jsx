@@ -39,7 +39,7 @@ function AuthPage() {
       initial={{ opacity: 0 }} 
       animate={{ opacity: 1 }} 
       exit={{ opacity: 0 }}
-      className="bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 min-h-screen flex flex-col justify-center items-center p-4 relative overflow-hidden"
+      className="bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 min-h-screen flex flex-col justify-center items-center px-4 py-8 sm:p-8 relative overflow-hidden"
     >
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -51,14 +51,14 @@ function AuthPage() {
         initial={{ y: 30, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.1, duration: 0.6 }}
-        className="relative z-10 bg-gradient-to-br from-slate-800 to-slate-900 p-8 rounded-2xl shadow-2xl w-full max-w-md border border-slate-700/50"
+        className="relative z-10 bg-gradient-to-br from-slate-800 to-slate-900 p-6 sm:p-8 rounded-2xl shadow-2xl w-full max-w-md border border-slate-700/50"
       >
         {/* Decorative gradient overlay */}
         <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-cyan-600/10 to-transparent pointer-events-none rounded-t-2xl" />
         
         {/* Logo/Icon */}
         <div className="relative flex justify-center mb-4">
-          <div className="w-14 h-14 flex items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 to-cyan-600 shadow-lg shadow-cyan-500/30">
+          <div className="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 to-cyan-600 shadow-lg shadow-cyan-500/30">
             <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
@@ -66,7 +66,7 @@ function AuthPage() {
         </div>
 
         {/* Title */}
-        <h2 className="text-2xl font-bold text-white mb-1 text-center">
+        <h2 className="text-xl sm:text-2xl font-bold text-white mb-1 text-center">
           {authMode === 'email' ? (isLogin ? t('authPage.loginTitle') : t('authPage.signUpTitle')) : 'Sign In with Phone'}
         </h2>
         <p className="text-gray-400 text-center mb-6 text-sm">
@@ -82,7 +82,7 @@ function AuthPage() {
                 {t('authPage.emailLabel')}
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none">
                   <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
                   </svg>
@@ -92,7 +92,7 @@ function AuthPage() {
                   id="email" 
                   value={email} 
                   onChange={(e) => setEmail(e.target.value)} 
-                  className="w-full pl-12 pr-4 py-2.5 bg-slate-900/50 border border-slate-700/50 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200"
+                  className="w-full pl-10 sm:pl-12 pr-4 py-2.5 bg-slate-900/50 border border-slate-700/50 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200"
                   placeholder="your.email@example.com"
                   required 
                 />
@@ -105,7 +105,7 @@ function AuthPage() {
                 {t('authPage.passwordLabel')}
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none">
                   <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
@@ -115,7 +115,7 @@ function AuthPage() {
                   id="password" 
                   value={password} 
                   onChange={(e) => setPassword(e.target.value)} 
-                  className="w-full pl-12 pr-4 py-2.5 bg-slate-900/50 border border-slate-700/50 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200"
+                  className="w-full pl-10 sm:pl-12 pr-4 py-2.5 bg-slate-900/50 border border-slate-700/50 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200"
                   placeholder="••••••••"
                   required 
                 />
@@ -142,7 +142,7 @@ function AuthPage() {
             <button 
               type="submit" 
               disabled={loading} 
-              className="w-full bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-white font-bold py-3 px-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-slate-800 transition-all duration-200 disabled:from-slate-700 disabled:to-slate-700 disabled:cursor-not-allowed shadow-lg shadow-cyan-600/20 hover:shadow-cyan-500/30 flex items-center justify-center gap-2"
+              className="w-full bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-white font-bold py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-slate-800 transition-all duration-200 disabled:from-slate-700 disabled:to-slate-700 disabled:cursor-not-allowed shadow-lg shadow-cyan-600/20 hover:shadow-cyan-500/30 flex items-center justify-center gap-2 text-sm sm:text-base"
             >
               {loading ? (
                 <>
@@ -185,7 +185,7 @@ function AuthPage() {
             setAuthMode(authMode === 'email' ? 'phone' : 'email');
             setError(null);
           }}
-          className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-slate-700/50 hover:bg-slate-700/80 text-white font-semibold rounded-lg transition-all duration-200"
+          className="w-full flex items-center justify-center gap-2 sm:gap-3 py-2.5 sm:py-3 px-4 bg-slate-700/50 hover:bg-slate-700/80 text-white font-semibold rounded-lg transition-all duration-200 text-sm sm:text-base"
         >
           {authMode === 'email' ? (
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
@@ -216,7 +216,7 @@ function AuthPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
-        className="relative z-10 mt-8 text-gray-500 text-sm text-center"
+        className="relative z-10 mt-6 sm:mt-8 text-gray-500 text-xs sm:text-sm text-center px-4"
       >
         CiviQ - Real-Time Local Issue Reporting Platform
       </motion.p>

@@ -180,7 +180,7 @@ function HomePage() {
 
         <motion.div 
           variants={containerVariants} 
-          className="relative z-20 max-w-5xl mx-auto text-center px-6"
+          className="relative z-20 max-w-5xl mx-auto text-center px-4 sm:px-6 lg:px-8"
         >
 
 
@@ -198,7 +198,7 @@ function HomePage() {
     ease: "easeOut",
     times: [0, 0.4, 0.6, 0.75, 0.88, 1] 
   }}
-  className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold uppercase mb-1 relative text-transparent bg-clip-text"
+  className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-extrabold uppercase mb-1 relative text-transparent bg-clip-text"
   style={{
     backgroundImage: 'linear-gradient(135deg, #06b6d4, #6366f1, #9333ea)',
     WebkitBackgroundClip: 'text',
@@ -214,7 +214,7 @@ function HomePage() {
 
 <motion.h1  
   variants={itemVariants}  
-  className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 tracking-tight drop-shadow-2xl" 
+  className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 tracking-tight drop-shadow-2xl" 
 > 
   <span className="block text-white leading-tight"> 
     {t('homePage.heroTitle')} 
@@ -225,7 +225,7 @@ function HomePage() {
 
           <motion.p 
             variants={itemVariants} 
-            className="text-lg sm:text-xl md:text-2xl mb-12 text-gray-200 max-w-3xl mx-auto font-light drop-shadow-lg"
+            className="text-base sm:text-lg md:text-xl lg:text-2xl mb-12 text-gray-200 max-w-3xl mx-auto font-light drop-shadow-lg"
           >
             {t('homePage.heroSubtitle')}
           </motion.p>
@@ -297,13 +297,13 @@ function HomePage() {
     <div className="text-center mb-16 px-6">
       <motion.h2
         variants={itemVariants}
-        className="text-4xl sm:text-5xl font-bold mb-4 text-white"
+        className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 text-white"
       >
         Monitor Urban Infrastructure
       </motion.h2>
       <motion.p
         variants={itemVariants}
-        className="text-gray-400 text-lg max-w-2xl mx-auto"
+        className="text-gray-400 text-base sm:text-lg max-w-2xl mx-auto"
       >
         Real-time visualization of civic issues — potholes, water clogging, unsafe streets, and more
       </motion.p>
@@ -366,14 +366,14 @@ import { useRef } from "react";
     <div className="text-center mb-20">
       <motion.h2
         variants={itemVariants}
-        className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 text-white tracking-tight"
+        className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-white tracking-tight"
       >
         {t("homePage.howItWorksTitle")}
       </motion.h2>
 
       <motion.p
         variants={itemVariants}
-        className="text-gray-400 text-lg max-w-2xl mx-auto leading-relaxed"
+        className="text-gray-400 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed"
       >
         {t("homePage.howItWorksSubtitle")}
       </motion.p>
@@ -517,7 +517,7 @@ import { useRef } from "react";
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.8, ease: "easeOut" }}
-      className="max-w-6xl mx-auto px-6 relative z-10"
+      className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10"
     >
       {/* Section Heading */}
       <div className="text-center mb-16">
@@ -526,7 +526,7 @@ import { useRef } from "react";
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 drop-shadow-[0_0_20px_rgba(56,189,248,0.3)]"
+          className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 drop-shadow-[0_0_20px_rgba(56,189,248,0.3)]"
         >
           Submit Your Report
         </motion.h2>
@@ -536,7 +536,7 @@ import { useRef } from "react";
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="text-gray-400 text-lg max-w-2xl mx-auto leading-relaxed"
+          className="text-gray-400 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed"
         >
           Help make your community safer by reporting local civic issues.  
           Every submission helps build a better city for everyone.
@@ -555,7 +555,7 @@ import { useRef } from "react";
         <div className="absolute -inset-[1px] rounded-2xl bg-gradient-to-br from-cyan-500 via-blue-500 to-purple-500 opacity-60 group-hover:opacity-100 blur-xl transition-all duration-700"></div>
 
         {/* Form Container */}
-        <div className="relative bg-slate-900/80 backdrop-blur-md p-10 sm:p-12 rounded-2xl border border-slate-800/60 shadow-2xl shadow-black/30 transition-all duration-500">
+        <div className="relative bg-slate-900/80 backdrop-blur-md p-6 sm:p-10 lg:p-12 rounded-2xl border border-slate-800/60 shadow-2xl shadow-black/30 transition-all duration-500">
           {/* Decorative top glow line */}
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-[2px] bg-gradient-to-r from-cyan-500 via-blue-400 to-purple-500 opacity-70 rounded-full"></div>
 

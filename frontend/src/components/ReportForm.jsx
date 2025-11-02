@@ -127,29 +127,29 @@ function ReportForm() {
       ref={cardRef}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className="relative w-full max-w-2xl mx-auto rounded-3xl overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.6)] bg-slate-900/60 border border-slate-700/40 backdrop-blur-2xl p-8 sm:p-10 transition-transform duration-300 perspective-[1000px]"
+      className="relative w-full max-w-2xl mx-auto rounded-3xl overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.6)] bg-slate-900/60 border border-slate-700/40 backdrop-blur-2xl p-6 sm:p-8 lg:p-10 transition-transform duration-300 perspective-[1000px]"
     >
       {!session && (
         <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-md flex justify-center items-center z-20 rounded-3xl">
-          <p className="text-white font-bold text-lg text-center">
+          <p className="text-white font-bold text-base sm:text-lg text-center px-4">
             Please log in to submit a report.
           </p>
         </div>
       )}
 
-      <h2 className="text-3xl sm:text-4xl font-extrabold mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 drop-shadow-[0_0_25px_rgba(56,189,248,0.3)]">
+      <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold mb-6 sm:mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 drop-shadow-[0_0_25px_rgba(56,189,248,0.3)]">
         {t('reportForm.title')}
       </h2>
 
-      <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
+      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6 relative z-10">
         <div>
-          <label className="block text-gray-300 text-sm font-semibold mb-2">
+          <label className="block text-gray-300 text-xs sm:text-sm font-semibold mb-2">
             {t('reportForm.issueTypeLabel')}
           </label>
           <select
             value={issueType}
             onChange={(e) => setIssueType(e.target.value)}
-            className="w-full px-4 py-3 bg-slate-800/60 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-300 shadow-inner shadow-black/20"
+            className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-800/60 border border-slate-700 rounded-xl text-white text-sm sm:text-base focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-300 shadow-inner shadow-black/20"
             disabled={isDisabled}
             required
           >
@@ -163,7 +163,7 @@ function ReportForm() {
         </div>
 
         <div>
-          <label className="block text-gray-300 text-sm font-semibold mb-2">
+          <label className="block text-gray-300 text-xs sm:text-sm font-semibold mb-2">
             {t('reportForm.descriptionLabel')}
           </label>
           <textarea
@@ -171,17 +171,17 @@ function ReportForm() {
             onChange={(e) => setDescription(e.target.value)}
             rows="4"
             placeholder={t('reportForm.descriptionPlaceholder')}
-            className="w-full px-4 py-3 bg-slate-800/60 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-300 shadow-inner shadow-black/20 resize-none"
+            className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-800/60 border border-slate-700 rounded-xl text-white text-sm sm:text-base focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-300 shadow-inner shadow-black/20 resize-none"
             disabled={isDisabled}
             required
           />
         </div>
 
         <div>
-          <label className="block text-gray-300 text-sm font-semibold mb-2">
+          <label className="block text-gray-300 text-xs sm:text-sm font-semibold mb-2">
             {t('reportForm.mediaLabel')}
           </label>
-          <div className="space-y-4 bg-slate-800/40 border border-slate-700/50 p-4 rounded-xl shadow-inner shadow-black/20">
+          <div className="space-y-3 sm:space-y-4 bg-slate-800/40 border border-slate-700/50 p-3 sm:p-4 rounded-xl shadow-inner shadow-black/20">
             <FileUpload key={formKey} onFileChange={(selectedFile) => setFile(selectedFile)} />
             <CameraCapture onFileChange={(selectedFile) => setFile(selectedFile)} />
             <VoiceRecorder onFileChange={(selectedFile) => setFile(selectedFile)} />
@@ -189,7 +189,7 @@ function ReportForm() {
         </div>
 
         {/* ✅ Show location status */}
-        <div className="text-sm text-center text-gray-400">
+        <div className="text-xs sm:text-sm text-center text-gray-400">
           {location
             ? `📍 Location captured (${location.lat.toFixed(4)}, ${location.lon.toFixed(4)})`
             : locationError
@@ -200,7 +200,7 @@ function ReportForm() {
         <button
           type="submit"
           disabled={isDisabled}
-          className="w-full py-3.5 font-semibold text-lg rounded-xl bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 text-white shadow-lg shadow-cyan-500/30 hover:shadow-cyan-400/40 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full py-3 sm:py-3.5 font-semibold text-base sm:text-lg rounded-xl bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 text-white shadow-lg shadow-cyan-500/30 hover:shadow-cyan-400/40 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSubmitting ? t('reportForm.submittingButton') : t('reportForm.submitButton')}
         </button>

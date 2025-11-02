@@ -89,45 +89,93 @@ function AdminDashboard() {
 
   return (
     <>
-      <motion.div initial="hidden" animate="visible" exit={{ opacity: 0 }} variants={itemVariants} className="bg-gray-900 min-h-screen text-white p-4 sm:p-8">
+      <motion.div initial="hidden" animate="visible" exit={{ opacity: 0 }} variants={itemVariants} className="bg-gray-900 min-h-screen text-white px-4 py-8 sm:px-6 lg:px-8">
         <div className="container mx-auto">
           <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl sm:text-4xl font-bold text-cyan-400">Admin Dashboard</h1>
-            <button onClick={() => setShowBroadcast(true)} className="bg-purple-600 hover:bg-purple-500 text-white font-bold py-2 px-4 rounded-lg">Send Broadcast</button>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-cyan-400">Admin Dashboard</h1>
+            <button onClick={() => setShowBroadcast(true)} className="bg-purple-600 hover:bg-purple-500 text-white font-bold py-2 px-3 sm:px-4 rounded-lg text-sm sm:text-base">Send Broadcast</button>
           </div>
-          <div className="overflow-x-auto bg-gray-800 rounded-lg shadow-xl">
-            <table className="min-w-full text-sm text-left text-gray-300">
-              <thead className="text-xs text-gray-400 uppercase bg-gray-700">
+          {/* Mobile Card View */}
+<div className="md:hidden space-y-4">
+  {reports.map((report, index) => (
+    <motion.div
+      key={report.id}
+      variants={itemVariants}
+      className="bg-gray-800 rounded-lg p-4 space-y-3"
+    >
+      <div className="flex justify-between items-start">
+        <span className="text-gray-400 text-xs">#{index + 1}</span>
+        <select
+          value={report.status}
+          onChange={(e) => handleStatusChange(report.id, e.target.value)}
+          className={`text-xs font-bold rounded px-2 py-1 ${statusStyles[report.status]?.badge}`}
+        >
+          <option value="submitted">{t('reportsPage.statuses.submitted')}</option>
+          <option value="in_progress">{t('reportsPage.statuses.in_progress')}</option>
+          <option value="resolved">{t('reportsPage.statuses.resolved')}</option>
+        </select>
+      </div>
+      
+      <div>
+        <div className="font-medium text-white">{t(`reportForm.issueTypes.${report.issue_type}`)}</div>
+        <div className="text-xs text-gray-400 mt-1 line-clamp-2">{report.description}</div>
+        <div className="text-xs text-gray-500 mt-1">{report.profiles?.email || 'N/A'}</div>
+      </div>
+      
+      <div className="flex gap-2 flex-wrap">
+        <span className={`px-2 py-1 text-xs rounded-full ${getPriorityStyles(report.duplicate_count || 1)}`}>
+          {report.duplicate_count || 1} Report{report.duplicate_count > 1 ? 's' : ''}
+        </span>
+      </div>
+      
+      <div className="flex gap-2 flex-wrap text-xs">
+        <button onClick={() => setReplyingReport(report)} className="text-green-400 hover:underline">Smart Reply</button>
+        <button onClick={() => setMessagingReport(report)} className="text-cyan-400 hover:underline">Message</button>
+        {report.media_url && !report.media_url.endsWith('.webm') && (
+          <button onClick={() => setViewingMedia(report.media_url)} className="text-purple-400 hover:underline">View Media</button>
+        )}
+        {report.media_url && report.media_url.endsWith('.webm') && (
+          <audio controls src={report.media_url} className="w-full h-8 rounded-lg" />
+        )}
+      </div>
+    </motion.div>
+  ))}
+</div>
+
+{/* Desktop Table View */}
+<div className="hidden md:block overflow-x-auto bg-gray-800 rounded-lg shadow-xl -mx-4 sm:mx-0">
+            <table className="min-w-full text-xs sm:text-sm text-left text-gray-300">
+              <thead className="text-[10px] sm:text-xs text-gray-400 uppercase bg-gray-700">
                 <tr>
-                  <th scope="col" className="px-6 py-3">S.No.</th>
-                  <th scope="col" className="px-6 py-3">User</th>
-                  <th scope="col" className="px-6 py-3">Issue</th>
+                  <th scope="col" className="px-2 sm:px-4 md:px-6 py-2 sm:py-3">S.No.</th>
+                  <th scope="col" className="px-2 sm:px-4 md:px-6 py-2 sm:py-3">User</th>
+                  <th scope="col" className="px-2 sm:px-4 md:px-6 py-2 sm:py-3">Issue</th>
                   
                   {/* Priority Column */}
-                  <th scope="col" className="px-6 py-3">Priority</th>
-                  <th scope="col" className="px-6 py-3">Status</th>
-                  <th scope="col" className="px-6 py-3">Timeline</th>
-                  <th scope="col" className="px-6 py-3">Actions</th>
+                  <th scope="col" className="px-2 sm:px-4 md:px-6 py-2 sm:py-3">Priority</th>
+                  <th scope="col" className="px-2 sm:px-4 md:px-6 py-2 sm:py-3">Status</th>
+                  <th scope="col" className="px-2 sm:px-4 md:px-6 py-2 sm:py-3">Timeline</th>
+                  <th scope="col" className="px-2 sm:px-4 md:px-6 py-2 sm:py-3">Actions</th>
                 </tr>
               </thead>
               <motion.tbody variants={containerVariants}>
                 {reports.map((report, index) => (
                   <motion.tr key={report.id} variants={itemVariants} className="border-b border-gray-700 hover:bg-gray-700/50">
-                    <td className="px-6 py-4">{index + 1}</td>
+                    <td className="px-2 sm:px-4 md:px-6 py-2 sm:py-4">{index + 1}</td>
                     <td className="px-6 py-4 text-xs text-gray-400" title={report.user_id}>{report.profiles?.email || 'N/A'}</td>
-                    <td className="px-6 py-4">
+                    <td className="px-2 sm:px-4 md:px-6 py-2 sm:py-4">
                       <div className="font-medium whitespace-nowrap">{t(`reportForm.issueTypes.${report.issue_type}`)}</div>
                       <div className="text-xs text-gray-400 max-w-xs truncate" title={report.description}>{report.description}</div>
                     </td>
 
                     {/* Priority Badge cell */}
-                    <td className="px-6 py-4">
+                    <td className="px-2 sm:px-4 md:px-6 py-2 sm:py-4">
                       <span className={`px-3 py-1 text-xs font-bold rounded-full ${getPriorityStyles(report.duplicate_count || 1)}`}>
                         {report.duplicate_count || 1} {report.duplicate_count > 1 ? 'Reports' : 'Report'}
                       </span>
                     </td>
 
-                    <td className="px-6 py-4">
+                    <td className="px-2 sm:px-4 md:px-6 py-2 sm:py-4">
                       <select value={report.status} onChange={(e) => handleStatusChange(report.id, e.target.value)} className={`text-xs font-bold border-none rounded px-2 py-1 ${statusStyles[report.status]?.badge || 'bg-gray-700'}`}>
                         <option value="submitted">{t('reportsPage.statuses.submitted')}</option>
                         <option value="in_progress">{t('reportsPage.statuses.in_progress')}</option>
@@ -143,8 +191,8 @@ function AdminDashboard() {
                       </ul>
                     </td>
 
-                    <td className="px-6 py-4">
-                    <div className="flex flex-col items-start space-y-2">
+                    <td className="px-2 sm:px-4 md:px-6 py-2 sm:py-4">
+                    <div className="flex flex-col items-start space-y-1 sm:space-y-2">
                       {/* ✅ NEW: Smart Reply Button */}
                       <button 
                         onClick={() => setReplyingReport(report)} 
@@ -158,7 +206,7 @@ function AdminDashboard() {
                       {/* Keep your existing media logic unchanged */}
                       {report.media_url && (
                         report.media_url.endsWith('.webm') ? (
-                          <audio controls src={report.media_url} className="w-48 h-8 rounded-full" />
+                          <audio controls src={report.media_url} className="w-32 sm:w-48 h-8 rounded-full" />
                         ) : (
                           <button onClick={() => setViewingMedia(report.media_url)} className="font-medium text-purple-400 hover:underline whitespace-nowrap">View Media</button>
                         )

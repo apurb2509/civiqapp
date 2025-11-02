@@ -35,7 +35,7 @@ function App() {
   return (
     <BrowserRouter>
       <Navbar />
-      <main className="pt-24">
+      <main className="pt-24 px-4 sm:px-6 lg:px-8">
         <AppRoutes />
       </main>
     </BrowserRouter>
