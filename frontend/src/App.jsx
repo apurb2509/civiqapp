@@ -6,7 +6,9 @@ import ReportsPage from './pages/ReportsPage';
 import AuthPage from './pages/AuthPage';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminRoute from './components/auth/AdminRoute';
-import MyBadgesPage from './pages/MyBadgesPage'; // ✅ Added import
+import MyBadgesPage from './pages/MyBadgesPage'; 
+import ProfileSettingsPage from './pages/ProfileSettingsPage';
+import AchievementsPage from './pages/AchievementsPage';
 
 function AppRoutes() {
   const location = useLocation();
@@ -16,6 +18,8 @@ function AppRoutes() {
         <Route path="/" element={<HomePage />} />
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/reports" element={<ReportsPage />} />
+        <Route path="/profile-settings" element={<ProfileSettingsPage />} />
+        <Route path="/achievements" element={<AchievementsPage />} />
         <Route 
           path="/admin" 
           element={
@@ -35,7 +39,7 @@ function App() {
   return (
     <BrowserRouter>
       <Navbar />
-      <main className="pt-24 px-4 sm:px-6 lg:px-8">
+      <main className="pt-24 sm:pt-28 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <AppRoutes />
       </main>
     </BrowserRouter>

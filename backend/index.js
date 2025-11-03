@@ -455,6 +455,106 @@ app.get('/api/reports', async (req, res) => {
 });
 
 // ===============================
+// GET User Profile
+// ===============================
+app.get('/api/profile', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ message: 'Authentication required.' });
+
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    if (userError || !user) return res.status(401).json({ message: 'Invalid user.' });
+
+    const { data: profile, error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+      
+    if (profileError) throw profileError;
+    res.status(200).json(profile);
+  } catch (error) {
+    console.error('Error fetching profile:', error.message);
+    res.status(500).json({ message: 'Failed to fetch profile.', error: error.message });
+  }
+});
+
+// ===============================
+// GET User Achievement Stats
+// ===============================
+app.get('/api/achievements', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ message: 'Authentication required.' });
+
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    if (userError || !user) return res.status(401).json({ message: 'Invalid user.' });
+
+    // 1. Get the user's profile
+    const { data: profile, error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .select('full_name, email, phone')
+      .eq('id', user.id)
+      .single();
+      
+    if (profileError) throw profileError;
+
+    // 2. Get their resolved reports count
+    const { count, error: countError } = await supabaseAdmin
+      .from('reports')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .eq('status', 'resolved');
+
+    if (countError) throw countError;
+
+    res.status(200).json({
+      user: {
+        name: profile.full_name || 'Citizen Reporter',
+        contact: profile.phone || profile.email
+      },
+      resolvedCount: count || 0
+    });
+  } catch (error) {
+    console.error('Error fetching achievement stats:', error.message);
+    res.status(500).json({ message: 'Failed to fetch achievement stats.', error: error.message });
+  }
+});
+
+// ===============================
+// UPDATE User Profile
+// ===============================
+app.patch('/api/profile', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ message: 'Authentication required.' });
+
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    if (userError || !user) return res.status(401).json({ message: 'Invalid user.' });
+
+    const { full_name, dob, city, area, pincode } = req.body;
+    
+    // Server-side validation
+    if (!full_name || !dob || !city || !area || !pincode) {
+      return res.status(400).json({ message: 'All fields are compulsory.' });
+    }
+
+    const { data: updatedProfile, error: updateError } = await supabaseAdmin
+      .from('profiles')
+      .update({ full_name, dob, city, area, pincode })
+      .eq('id', user.id)
+      .select()
+      .single();
+
+    if (updateError) throw updateError;
+    res.status(200).json({ message: 'Profile updated successfully!', profile: updatedProfile });
+  } catch (error) {
+    console.error('Error updating profile:', error.message);
+    res.status(500).json({ message: 'Failed to update profile.', error: error.message });
+  }
+});
+
+// ===============================
 // TWILIO: Send OTP
 // ===============================
 app.post('/api/auth/send-otp', async (req, res) => {
