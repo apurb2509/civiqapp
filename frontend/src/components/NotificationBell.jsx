@@ -108,7 +108,7 @@ function NotificationBell() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
               transition={{ duration: 0.15 }}
-              className="absolute top-full right-0 mt-3 w-[calc(100vw-2rem)] sm:w-80 md:w-96 max-w-96 bg-slate-800 border border-slate-700/50 rounded-xl shadow-2xl overflow-hidden backdrop-blur-sm"
+              className="absolute top-full right-0 mt-3 w-[calc(100vw-2rem)] sm:w-80 md:w-96 bg-slate-800 border border-slate-700/50 rounded-xl shadow-2xl overflow-hidden backdrop-blur-sm"
             >
               {/* Header */}
               <div className="px-3 sm:px-4 py-3 sm:py-3.5 bg-gradient-to-r from-slate-800 to-slate-800/80 border-b border-slate-700/50 flex items-center justify-between">
@@ -142,7 +142,7 @@ function NotificationBell() {
                       </svg>
                     </div>
                     <p className="text-gray-400 text-xs sm:text-sm font-medium">No new notifications</p>
-<p className="text-gray-500 text-[10px] sm:text-xs mt-1">You're all caught up!</p>
+                    <p className="text-gray-500 text-xs sm:text-sm mt-1">You're all caught up!</p>
                   </div>
                 ) : (
                   <div className="divide-y divide-slate-700/30">
