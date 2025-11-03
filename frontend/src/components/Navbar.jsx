@@ -83,7 +83,7 @@ function Navbar() {
     <>
       <header className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-4 px-4">
         <motion.div
-          className="w-full max-w-5xl"
+          className="w-full max-w-5xl relative overflow-visible"
           initial={{ y: -100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
@@ -231,15 +231,31 @@ function Navbar() {
           </div>
 
           {/* Mobile Navbar */}
-          <div className="lg:hidden flex items-center justify-between p-3 w-full bg-slate-900/70 backdrop-blur-xl border border-slate-700/40 rounded-full shadow-lg shadow-black/40">
+          <div className="lg:hidden flex items-center justify-between p-3 w-full bg-slate-900/70 backdrop-blur-xl border border-slate-700/40 rounded-2xl shadow-lg shadow-black/40 overflow-visible flex-wrap relative z-[9999]">
             <Link
               className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500"
               to="/"
             >
               {t("navbar.brand")}
             </Link>
-            <div className="flex items-center gap-2">
-              {user && <NotificationBell />}
+            <div className="flex items-center gap-2 relative overflow-visible">
+              <select
+                onChange={(e) => changeLanguage(e.target.value)}
+                value={i18n.language}
+                className="bg-slate-900/90 text-white border border-cyan-600/40 rounded-lg px-2 py-1 text-sm shadow-lg focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+              >
+                {languages.map((lng) => (
+                  <option key={lng.code} value={lng.code}>
+                    {lng.lang}
+                  </option>
+                ))}
+              </select>
+
+              {user && (
+                <div className="relative z-50">
+                  <NotificationBell />
+                </div>
+              )}
               <button onClick={() => setIsMenuOpen(true)} className="p-2">
                 <svg
                   className="w-6 h-6 text-white"
@@ -317,61 +333,61 @@ function Navbar() {
                 </>
               )}
               {user && (
-  <>
-    <Link
-      onClick={() => setIsMenuOpen(false)}
-      to="/profile-settings"
-      className="text-2xl text-gray-300 hover:text-cyan-400"
-    >
-      Profile Settings
-    </Link>
-    
-    {profile?.role !== "admin" && (
-      <Link
-        onClick={() => setIsMenuOpen(false)}
-        to="/achievements"
-        className="text-2xl text-gray-300 hover:text-cyan-400"
-      >
-        My Achievements
-      </Link>
-    )}
-    
-    <button
-      onClick={() => {
-        setIsMenuOpen(false);
-        handleSignOut();
-      }}
-      className="text-2xl text-red-400 hover:text-red-300"
-    >
-      {t("navbar.signOut")}
-    </button>
-  </>
-)}
+                <>
+                  <Link
+                    onClick={() => setIsMenuOpen(false)}
+                    to="/profile-settings"
+                    className="text-2xl text-gray-300 hover:text-cyan-400"
+                  >
+                    Profile Settings
+                  </Link>
 
-{!user && (
-  <Link
-    onClick={() => setIsMenuOpen(false)}
-    to="/auth"
-    className="text-2xl text-gray-300 hover:text-cyan-400"
-  >
-    {t("navbar.login")}
-  </Link>
-)}
+                  {profile?.role !== "admin" && (
+                    <Link
+                      onClick={() => setIsMenuOpen(false)}
+                      to="/achievements"
+                      className="text-2xl text-gray-300 hover:text-cyan-400"
+                    >
+                      My Achievements
+                    </Link>
+                  )}
 
-<select
-  onChange={(e) => {
-    changeLanguage(e.target.value);
-    setIsMenuOpen(false);
-  }}
-  value={i18n.language}
-  className="bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white text-lg"
->
-  {languages.map((lng) => (
-    <option key={lng.code} value={lng.code}>
-      {lng.lang}
-    </option>
-  ))}
-</select>
+                  <button
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      handleSignOut();
+                    }}
+                    className="text-2xl text-red-400 hover:text-red-300"
+                  >
+                    {t("navbar.signOut")}
+                  </button>
+                </>
+              )}
+
+              {!user && (
+                <Link
+                  onClick={() => setIsMenuOpen(false)}
+                  to="/auth"
+                  className="text-2xl text-gray-300 hover:text-cyan-400"
+                >
+                  {t("navbar.login")}
+                </Link>
+              )}
+
+              <select
+                onChange={(e) => {
+                  changeLanguage(e.target.value);
+                  setIsMenuOpen(false);
+                }}
+                value={i18n.language}
+                className="bg-slate-900/90 text-white border border-cyan-600/40 rounded-lg px-4 py-3 text-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+              >
+                {languages.map((lng) => (
+                  <option key={lng.code} value={lng.code}>
+                    {lng.lang}
+                  </option>
+                ))}
+              </select>
             </nav>
           </motion.div>
         )}
